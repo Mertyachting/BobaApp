@@ -169,7 +169,8 @@ export default function Home() {
 
 
             // event listener when the user clicks to place the order
-            const submitButton = document.getElementById("submit-button");
+            const submitButton: HTMLElement = document.getElementById("submit-button");
+
             submitButton.addEventListener("click", async () => {
               const { id } = await fastlanePaymentComponent.getPaymentToken();
               console.log('THE ID IS' + id)
@@ -243,10 +244,6 @@ export default function Home() {
               })
 
               return res;
-
-
-              // Send the paymentToken and previously captured device data to server
-              // to complete checkout
             });
 
           }
