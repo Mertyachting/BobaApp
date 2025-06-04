@@ -11,11 +11,10 @@
   },
   "dependencies": {
     "@next/env": "^15.2.1",
-    "@paypal/paypal-js": "file:paypal-js",
-    "@paypal/react-paypal-js": "file:react-paypal-js",
+    "@paypal/react-paypal-js": "^8.8.4-alpha.1",
     "bulma": "^1.0.3",
     "mysql2": "^3.14.0",
-    "next": "15.1.7",
+    "next": "^15.3.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "uuid": "^11.1.0"

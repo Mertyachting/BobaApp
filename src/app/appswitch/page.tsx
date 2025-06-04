@@ -2,35 +2,33 @@
 
 import React from "react";
 
-import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js/src";
+import { PayPalScriptProvider, PayPalButtons, usePayPalButtons } from "@paypal/react-paypal-js";
 import { NextResponse } from "next/server";
 import { v4 as uuidv4 } from 'uuid';
+import { useEffect } from "react";
 
 export function generateUUID(): string {
     return uuidv4()
 }
 
-
-
-
-
 const base = 'http://192.168.178.34:3000';
+
+
 
 const client_id = process.env.NEXT_PUBLIC_CLIENT_ID ? process.env.NEXT_PUBLIC_CLIENT_ID : 'test';
 const merchant_id = process.env.NEXT_PUBLIC_MERCHANT_ID ? process.env.NEXT_PUBLIC_MERCHANT_ID : 'test';
 
-
-
 export default function AppSwitch() {
+
     const initialOptions = {
         clientId: client_id,
         currency: "USD",
         intent: "capture",
         merchantId: merchant_id,
         buyerCountry: 'US',
-        components: ['buttons', 'fastlane'],
         'data-partner-attribution-id': "Boba"
     };
+
 
     const payload = {
         "intent": "CAPTURE",
@@ -111,12 +109,10 @@ export default function AppSwitch() {
         }
     }
 
-
-
     async function createOrder() {
         console.log('CLICK')
         try {
-            const respone = await fetch(`${base}/api/order`, {
+            const respone = await fetch(`/api/order`, {
                 method: "POST",
                 mode: "same-origin",
                 headers: {
@@ -167,15 +163,36 @@ export default function AppSwitch() {
 
     }
 
+    const { Buttons, isLoaded, hasReturned, resume } = usePayPalButtons({
+        appSwitchWhenAvailable: true,
+        createOrder,
+        onApprove,
+        message: {
+            // This amount is hard coded for demo purposes
+            amount: 120.0,
+            position: "top",
+        },
+    });
+
+    useEffect(() => {
+        if (isLoaded && hasReturned()) {
+            resume();
+        }
+    }, [resume, isLoaded, hasReturned]);
+
+
 
     return (
         <>
-            <h1 className="title is-1">THIS IS APPSWITCH</h1>
-            <PayPalScriptProvider options={initialOptions}>
-                <PayPalButtons createOrder={createOrder} onApprove={onApprove} appSwitchWhenAvailable={true} />
-            </PayPalScriptProvider>
+            <div className="container">
+                <div className="container">
+                    <div className="column is-mobile">
+                        <h1 className="title is-2">Test APPSWITCH</h1>
+                        {isLoaded ? <Buttons></Buttons> : null}
+                    </div>
+                </div>
 
+            </div>
         </>
-
     );
 };

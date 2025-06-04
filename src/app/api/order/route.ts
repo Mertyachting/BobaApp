@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from 'uuid';
+import { POST as accessToken } from '../access_token/route'
 
 export function generateUUID(): string {
     return uuidv4()
@@ -16,28 +17,20 @@ var jwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBU1l6WGpZQi1JMW9
 
 
 async function getAccessToken() {
-    let basis = 'http://192.168.178.34:3000'
-    const res = await fetch(`${basis}/api/access_token`, {
-        method: "POST",
-        mode: "same-origin"
-    })
+    const res = await accessToken()
     const data = await res.json()
-    console.log(data)
     const access_token = data
+    console.log(accessToken)
     return access_token
 }
 
 //@ts-ignore
 export async function POST(req: NextRequest) {
+    console.log(accessToken)
     // use the cart information passed from the front-end to calculate the purchase unit details
     const reqBody = await req.json();
-    console.log(
-        reqBody
-    );
     const base = 'https://api-m.sandbox.paypal.com'
     const url = `${base}/v2/checkout/orders`;
-
-
 
     try {
         const response = await fetch(url,
@@ -59,9 +52,11 @@ export async function POST(req: NextRequest) {
                 body: JSON.stringify(reqBody),
             });
         const data = await response.json();
+        console.log(data);
         return NextResponse.json(data);
     } catch (e) {
-        console.log('error: ' + e)
+        return NextResponse.json('error: ' + e);
+
     }
 
 }

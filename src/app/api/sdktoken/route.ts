@@ -1,5 +1,4 @@
-export const dynamic = 'force-static'
-import { pool } from "./db/route";
+import { NextResponse } from "next/server";
 
 
 var auth = '';
@@ -32,20 +31,9 @@ export async function POST() {
         const data = await res.json();
         const access_token = data.access_token;
 
-        // Push the access_token into the database.
-        // Inserts into the "credentials" table and the "access_token" column.
-        /* const connection = await pool.getConnection();
-        const [result] = await connection.query(
-            'INSERT INTO credentials (accesstoken) VALUES (?)',
-            [access_token] 
-        );
-        */
-
-        // console.log("Access token inserted successfully, insert ID:", result);
-
-        return Response.json(access_token);
+        return NextResponse.json(access_token);
     }
     catch (e) {
-        return Response.json({ e });
+        return NextResponse.json({ e });
     }
 };

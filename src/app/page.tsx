@@ -4,14 +4,16 @@ import React from 'react';
 
 import Script from 'next/script';
 import { useState, useEffect } from 'react';
-import ProductCard from './components/ProductCard';
+import MasterSword from '../../public/images/TotK_Master_Sword_Fused_Icon_2.png'
+import Image from 'next/image';
+import { NextResponse } from 'next/server';
+
 
 var sdkToken = await getSDKToken();
 
 async function getSDKToken() {
-  const res = await fetch("http://192.168.178.34:3000//api", {
-    method: "POST",
-    mode: "same-origin"
+  const res = await fetch('/api/sdktoken', {
+    method: "POST"
   })
   const data = await res.json()
   const access_token = data
@@ -32,7 +34,8 @@ declare global {
 
 
 export default function Home() {
-  var [email, setEmail] = useState('');
+  var [email, setEmail] = useState('kite@lute.biz');
+  var [payDisable, setPayDisable] = useState(true);
 
   //@ts-ignore
   let identity, profile, FastlanePaymentComponent, FastlaneWatermarkComponent;
@@ -51,11 +54,12 @@ export default function Home() {
   let shippingAddress;
   let memberAuthenticatedSuccessfully = false;
 
-
-
-
+  function callSubmitButton() {
+    return window.submitButton();
+  }
 
   return (
+
     <>
       <Script
         src="https://www.paypal.com/sdk/js?client-id=ASYzXjYB-I1obLcTb3uBd-VJnP1eCrJgykR30_RUpOFsUXQEwHYsooIERfuWCfwDXL9BdH94uwGJi5zQ&merchant-id=DVJBG3EJV2YMJ&buyer-country=US&currency=USD&components=buttons,fastlane"
@@ -94,15 +98,16 @@ export default function Home() {
             const isEmailValid = emailOne.length > 1 ? emailOne : null;
 
             if (!isEmailValid) {
+              alert('please enter a valid email')
               return;
             }
 
             console.log(isEmailValid)
 
             //@ts-ignore
-            const { customerContextId } = await identity.lookupCustomerByEmail(
+            const { customerContextId } = await NextResponse.json(identity.lookupCustomerByEmail(
               emailOne,
-            );
+            ));
 
             let renderFastlaneMemberExperience = false;
             const {
@@ -115,6 +120,7 @@ export default function Home() {
 
             if (authenticationState === "succeeded") {
               console.log('MEMBER SUCESS')
+              setPayDisable(false)
               // Fastlane member successfully authenticated themselves
               // profileData contains their profile details 
 
@@ -126,6 +132,7 @@ export default function Home() {
             } else {
               // Member failed or canceled authentication. Treat them as a guest payer
               renderFastlaneMemberExperience = false;
+              setPayDisable(false)
             }
             //@ts-ignore
             //@ts-ignore
@@ -173,7 +180,7 @@ export default function Home() {
 
             submitButton.addEventListener("click", async () => {
               const { id } = await fastlanePaymentComponent.getPaymentToken();
-              console.log('THE ID IS' + id)
+              console.log('THE ID IS ' + id)
 
               let payload = {
                 "intent": "CAPTURE",
@@ -186,11 +193,11 @@ export default function Home() {
                   {
                     "amount": {
                       "currency_code": "USD",
-                      "value": "50.00",
+                      "value": "309.99",
                       "breakdown": {
                         "item_total": {
                           "currency_code": "USD",
-                          "value": "40.00"
+                          "value": "299.99"
                         },
                         "shipping": {
                           "currency_code": "USD",
@@ -200,27 +207,23 @@ export default function Home() {
                     },
                     "items": [
                       {
-                        "name": "Coffee",
-                        "description": "1 lb Kona Island Beans",
-                        "sku": "sku03",
+                        "name": "Master Sword",
+                        "description": "A charged Master Sword",
+                        "sku": "sku01",
                         "unit_amount": {
                           "currency_code": "USD",
-                          "value": "40.00"
+                          "value": "299.99"
                         },
                         "quantity": "1",
                         "category": "PHYSICAL_GOODS",
                         "image_url": "https://example.com/static/images/items/1/kona_coffee_beans.jpg",
                         "url": "https://example.com/items/1/kona_coffee_beans",
-                        "upc": {
-                          "type": "UPC-A",
-                          "code": "987654321015"
-                        }
                       }
                     ],
                     "shipping": {
                       "type": "SHIPPING",
                       "name": {
-                        "full_name": "Lawrence David"
+                        "full_name": "Steve Mobbs"
                       },
                       "address": {
                         "address_line_1": "585 Moreno Ave",
@@ -238,13 +241,23 @@ export default function Home() {
                 ]
               }
 
-              const res = await fetch('api/order', {
-                'method': 'POST',
-                'body': JSON.stringify(payload)
-              })
+              if (await id) {
+                const res = await fetch('api/order', {
+                  'method': 'POST',
+                  'body': JSON.stringify(payload)
+                })
 
-              return res;
+                if (res.status === 200) {
+                  alert('Payment Sucess. token id: ' + id)
+                }
+                return res;
+              }
+              else (console.log('no ID found'))
+
+
+
             });
+
 
           }
 
@@ -260,47 +273,78 @@ export default function Home() {
       <link rel="preload" href="https://www.paypalobjects.com/fastlane-v1/assets/fastlane_en_sm_light" />
 
       <div
-        className="container"
-        style={{
-          minHeight: '50vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
+        className="container is mobile"
       >
-        <div className="columns is-vcentered">
+        <div className="columns is-gapless mt-5 mb-0">
           <div
-            className="column is-half"
-            style={{ display: 'flex', justifyContent: 'center' }}
+            className="column is-2"
           >
-            <ProductCard />
+            <input className="input" type="email" placeholder={email} onChange={(e) => setEmail(e.target.value)} />
           </div>
           <div
-            className="column is-half"
-            style={{ display: 'flex', justifyContent: 'center' }}
+            className="column"
           >
-            <input className="input" type="email" placeholder="Enter email here" onChange={(e) => setEmail(e.target.value)} />
             <button className="button is-link" onClick={() => window.lookupEmailProfile(email)}>check mail</button>
-            <button className="button is-link is-dark" id="submit-button" onClick={window.submitButton}>Pay</button>
           </div>
-          <div className='columns is-mobile'>
-            <div className="column">
-              <div id="watermark-container"></div>
+        </div>
+        <div className='columns'>
+          <div className="column is-offset-2" id="watermark-container">
+          </div>
+        </div>
+      </div >
+      <div className="container is-mobile">
+        <div className="columns is-multiline">
+          <div className='column is-half'>
+            <div className='column is narrow' id="payment-container"></div>
+          </div>
+          <div className="column is-half">
+            <div className="box">
+              <article className="media">
+                <div className="media-left">
+                  <figure className="image is-128x128">
+                    <Image src={MasterSword} alt='product image showing the Master Sword from Zelda TOTK' fill={true}></Image>
+                  </figure>
+                </div>
+                <div className="media-content">
+                  <div className="content">
+                    <h3 className='title is-3'>Order Summary</h3>
+                    <p>
+                      <strong>Master Sword</strong>
+                      <br />
+                      <strong>1 item</strong>
+                      <br />
+                      <strong>$299.99</strong>
+                    </p>
+                  </div>
+                  <nav className="level is-mobile">
+                    <div className="level-left">
+                      <a className="level-item" aria-label="reply">
+                        <span className="icon is-small">
+                          <i className="fas fa-reply" aria-hidden="true"></i>
+                        </span>
+                      </a>
+                      <a className="level-item" aria-label="retweet">
+                        <span className="icon is-small">
+                          <i className="fas fa-retweet" aria-hidden="true"></i>
+                        </span>
+                      </a>
+                      <a className="level-item" aria-label="like">
+                        <span className="icon is-small">
+                          <i className="fas fa-heart" aria-hidden="true"></i>
+                        </span>
+                      </a>
+                    </div>
+                  </nav>
+                </div>
+              </article>
             </div>
+            <button className="button is-link is-large is-fullwidth" id="submit-button" onClick={callSubmitButton} disabled={payDisable}>Pay</button>
           </div>
 
         </div>
-
-
       </div>
-      <div>
-        <div id="payment-container"></div>
-      </div>
-
 
 
     </>
-
-
   );
 }

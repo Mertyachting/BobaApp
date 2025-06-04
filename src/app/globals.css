@@ -10,3 +10,7 @@ body {
 * {
   box-sizing: border-box;
 }
+
+.navbar {
+  --bulma-navbar-item-img-max-height: 128px;
+}

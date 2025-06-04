@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+
 export const dynamic = 'force-static'
 
 
@@ -43,9 +45,9 @@ export async function POST() {
 
         // console.log("Access token inserted successfully, insert ID:", result);
 
-        return Response.json(access_token);
+        return NextResponse.json(access_token);
     }
     catch (e) {
-        return Response.json({ e });
+        return NextResponse.json({ e });
     }
 };
