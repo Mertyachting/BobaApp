@@ -4,19 +4,18 @@ import './globals.css';
 import Image from 'next/image'
 
 
-import logo from "../../public/images/Boba_Fett_icon_128x128.png"
+import logo from "../../public/images/Monogram-OneColor-PayPal-RGB-White.png"
 import Link from 'next/link';
-import { PayPalScriptProvider } from '@paypal/react-paypal-js';
+import { loggedIn } from './login/page';
+
 import { Metadata } from 'next';
 
 
-
-const client_id = process.env.NEXT_PUBLIC_CLIENT_ID ? process.env.NEXT_PUBLIC_CLIENT_ID : 'test';
-const merchant_id = process.env.NEXT_PUBLIC_MERCHANT_ID ? process.env.NEXT_PUBLIC_MERCHANT_ID : 'test';
+export var email = 'sb-89a43m40169106@business.example.com'
 
 
 export const metadata: Metadata = {
-  title: 'LOOT CAVE',
+  title: 'PP Beyond',
   description: 'Test App for PayPal SDK',
 };
 
@@ -27,48 +26,44 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
 
-  const initialOptions = {
-    clientId: client_id,
-    currency: "USD",
-    intent: "capture",
-    merchantId: merchant_id,
-    buyerCountry: 'US',
-    'data-partner-attribution-id': "Boba"
-  };
-
   return (
     <html lang="en">
       <body>
-        <title>The Amazing PayPal Partner App</title>
+        <title>PayPal Beyond</title>
         <nav className="navbar is-dark" role="navigation" aria-label="main navigation">
           <div className="navbar-brand">
             <Link className="navbar-item" href="/">
-              <Image src={logo} alt="picture of a helmet with a payments logo on it" width={64} height={64}>
-
+              <Image src={logo} alt="picture of a helmet with a payments logo on it" width={20} height={64}>
               </Image>
-              <h1 className='title is-3' >THE LOOT CAVE</h1>
+              <h5 className='title is-5'> Beyond</h5>
             </Link>
+          </div>
 
 
-            <div id="navbar" className="navbar-menu">
-              <div className="navbar-start">
-                <a className="navbar-item" href="./onboarding">
-                  Onboarding
-                </a>
+          <div id="navbar" className="navbar-menu">
+            <div className="navbar-start">
+              <a className="navbar-item" href="./onboarding">
+                Onboarding
+              </a>
 
-                <a className="navbar-item" href='/'>
-                  FastLane
-                </a>
-                <a className="navbar-item" href='/appswitch'>
-                  AppSwitch
-                </a>
-              </div>
+              <a className="navbar-item" href='/'>
+                FastLane
+              </a>
+              <a className="navbar-item" href='/checkout'>
+                AppSwitch
+              </a>
+            </div>
+          </div>
+
+          <div className="navbar-end">
+            <div className='navbar-item'>
+              <button className='button'>{email}</button>
             </div>
           </div>
         </nav>
-        <PayPalScriptProvider options={initialOptions}>
-          {children}
-        </PayPalScriptProvider>
+
+        {children}
+
       </body>
     </html>
   );

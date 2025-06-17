@@ -10,6 +10,12 @@ function EncodeAuthorization(a: String, b: String) {
     auth = btoa(`${a}:${b}`);
 }
 
+export async function getAccessToken() {
+    const res = await POST()
+    const data = await res.json()
+    const access_token = data
+    return access_token
+}
 
 export async function POST() {
     let url = 'https://api-m.sandbox.paypal.com/v1/oauth2/token'

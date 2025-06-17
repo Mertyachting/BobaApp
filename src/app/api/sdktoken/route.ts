@@ -11,7 +11,7 @@ function EncodeAuthorization(a: String, b: String) {
 export async function POST() {
     let url = 'https://api-m.sandbox.paypal.com/v1/oauth2/token'
 
-    // @ts-ignore
+    // @ts-ignore‚
     EncodeAuthorization(process.env.NEXT_PUBLIC_CLIENT_ID, process.env.SECRET_KEY);
 
     try {
@@ -37,3 +37,4 @@ export async function POST() {
         return NextResponse.json({ e });
     }
 };
+
