@@ -4,23 +4,16 @@ export const dynamic = 'force-static'
 
 
 
-var auth = '';
+let auth = '';
 
-function EncodeAuthorization(a: String, b: String) {
+function EncodeAuthorization(a: string, b: string) {
     auth = btoa(`${a}:${b}`);
 }
 
-export async function getAccessToken() {
-    const res = await POST()
-    const data = await res.json()
-    const access_token = data
-    return access_token
-}
-
 export async function POST() {
-    let url = 'https://api-m.sandbox.paypal.com/v1/oauth2/token'
+    const url = 'https://api-m.sandbox.paypal.com/v1/oauth2/token'
 
-    // @ts-ignore
+    // @ts-expect-error the client id and secret will be pulled from the .env as strings
     EncodeAuthorization(process.env.NEXT_PUBLIC_CLIENT_ID, process.env.SECRET_KEY);
 
     try {

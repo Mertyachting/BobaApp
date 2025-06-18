@@ -1,12 +1,11 @@
 
-import React, { Suspense } from 'react';
+import React from 'react';
 
 import Script from 'next/script';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import MasterSword from '../../../public/images/CoffeeBeans.png'
 import Image from 'next/image';
 import { NextResponse } from 'next/server';
-import { LoaderCircle } from 'lucide-react';
 import { redirect } from 'next/navigation';
 
 
@@ -19,9 +18,9 @@ import { redirect } from 'next/navigation';
 
 declare global {
     interface Window {
-        //@ts-ignore
+        //@ts-expect-error its hard coded
         lookupEmailProfile;
-        //@ts-ignore
+        //@ts-expect-error its hard coded
         submitButton;
     }
 }
@@ -36,20 +35,20 @@ export async function getSDKToken() {
 
 }
 
-var sdk_token = await getSDKToken();
+const sdk_token = await getSDKToken();
 
 
 export default function FastLane() {
 
 
-    let [email, setEmail] = useState('kite@lute.biz');
-    var [payDisable, setPayDisable] = useState(true);
+    const [email, setEmail] = useState('kite@lute.biz');
+    const [payDisable, setPayDisable] = useState(true);
 
-    //@ts-ignore
+    //@ts-expect-error its hard coded 
     let identity, profile, FastlanePaymentComponent, FastlaneWatermarkComponent;
-    //@ts-ignore
+    //@ts-expect-error its hard coded
     let paymentComponent;
-
+    /*
     let addressSummary;
     let shippingAddressForm;
     let isShippingRequired;
@@ -61,6 +60,7 @@ export default function FastLane() {
     let paymentToken;
     let shippingAddress;
     let memberAuthenticatedSuccessfully = false;
+    */
 
     function callSubmitButton() {
         window.submitButton();
@@ -78,7 +78,7 @@ export default function FastLane() {
                     console.log(email);
 
                     ({ identity, profile, FastlanePaymentComponent, FastlaneWatermarkComponent } =
-                        //@ts-ignore
+                        //@ts-expect-error its hard coded
                         await window.paypal.Fastlane({
                             // shippingAddressOptions: {
                             //   allowedLocations: ['US:TX', 'US:CA', 'MX', 'CA:AB', 'CA:ON'],
@@ -97,7 +97,7 @@ export default function FastLane() {
 
                     watermarkComponent.render('#watermark-container');
 
-                    window.lookupEmailProfile = async function lookupEmailProfile(mail: String) {
+                    window.lookupEmailProfile = async function lookupEmailProfile(mail: string) {
 
                         console.log('THE BUTTON WAS CLICKED!')
                         // Checks if email is empty or in a invalid format
@@ -114,7 +114,7 @@ export default function FastLane() {
 
                         console.log(isEmailValid)
 
-                        //@ts-ignore
+                        //@ts-expect-error its hard coded
                         const { customerContextId } = await identity.lookupCustomerByEmail(
                             emailOne,
                         );
@@ -123,7 +123,7 @@ export default function FastLane() {
                         const {
                             authenticationState,
                             profileData
-                            //@ts-ignore
+                            //@ts-expect-error its hard coded
                         } = await identity.triggerAuthenticationFlow(customerContextId);
 
                         console.log(authenticationState)
@@ -144,24 +144,22 @@ export default function FastLane() {
                             renderFastlaneMemberExperience = false;
                             setPayDisable(false)
                         }
-                        //@ts-ignore
-                        //@ts-ignore
+                        //@ts-expect-error
+                        //@ts-expect-error
                         const fastlanePaymentComponent = await paymentComponent;
 
                         await fastlanePaymentComponent.render("#payment-container");
                     }
 
                     window.submitButton = async function () {
-                        //@ts-ignore
+                        //@ts-expect-error its hard coded
                         const fastlanePaymentComponent = await paymentComponent;
-
-                        //@ts-ignore
 
                         // event listener when the user clicks to place the order
 
                         const { id } = await fastlanePaymentComponent.getPaymentToken();
                         console.log('THE ID IS ' + id)
-                        let payload = {
+                        const payload = {
                             "intent": "CAPTURE",
                             "payment_source": {
                                 "card": {

@@ -123,7 +123,7 @@ export default function AppSwitch() {
 
     }
 
-    //@ts-ignore
+    //@ts-expect-error
     async function onApprove(data) {
 
         console.log('onapprove is called.')

@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { v4 as uuidv4 } from 'uuid';
-import { POST as accessToken, getAccessToken } from '../access_token/route'
+import { POST as accessToken } from '../access_token/route'
+import { getAccessToken } from "@/app/helpers/helpers";
+import { generateUUID } from "@/app/helpers/helpers";
 
-export function generateUUID(): string {
-    return uuidv4()
-}
+
 
 
 
@@ -18,7 +17,7 @@ var jwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBU1l6WGpZQi1JMW9
 
 
 
-//@ts-ignore
+//@ts-expect-error
 export async function POST(req: NextRequest) {
     console.log(accessToken)
     // use the cart information passed from the front-end to calculate the purchase unit details

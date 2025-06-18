@@ -11,30 +11,26 @@ import { Check, TriangleAlert } from "lucide-react";
 
 
 
-export default function onboarding() {
-    useEffect(() => { getOnboardingData(email) }, [])
+export default function Onboarding() {
+    useEffect(() => { getOnboardingData() })
 
-    let [email, setEmail] = useState('sb-89a43m40169106@business.example.com');
-    let [email_not_verified, setEmailNotVerified] = useState(false);
-    let [payment_not_receivable, setPaymentNotReceivable] = useState(false);
-    let [offboarding, setOffboarding] = useState(false);
-    let [onboarding, setOnboarding] = useState(true)
-    let [venmo, setVenmo] = useState(true)
-    let [payLater, setPayLater] = useState(true)
-    let [cc, setCC] = useState(true)
-    let [appswitch, setAppSwitch] = useState(true)
+    const [email, setEmail] = useState('sb-89a43m40169106@business.example.com');
+    const [email_not_verified, setEmailNotVerified] = useState(false);
+    const [payment_not_receivable, setPaymentNotReceivable] = useState(false);
+    const [offboarding, setOffboarding] = useState(false);
+    const [onboarding, setOnboarding] = useState(true)
+    const [venmo, setVenmo] = useState(true)
+    const [payLater, setPayLater] = useState(true)
+    const [cc, setCC] = useState(true)
+    const [appswitch, setAppSwitch] = useState(true)
 
-
-    function startOffboarding() {
-
-    }
 
     function unverifyMail() {
-        return email_not_verified = true;
+        return setEmailNotVerified(true)
     }
 
     function paymentUnreceivable() {
-        return payment_not_receivable = true;
+        return setPaymentNotReceivable(true)
     }
 
     async function GenerateOnboardingLink() {
@@ -50,8 +46,7 @@ export default function onboarding() {
         return window.open(data.data.links[1].href);
     }
 
-    async function getOnboardingData(mail: String) {
-        mail = email;
+    async function getOnboardingData() {
         try {
             const res = await fetch(`api/partnerreferral/GET_onboarding_data?tracking_id=${email}`,
                 {
@@ -133,7 +128,7 @@ export default function onboarding() {
                         </div>
 
                         <div className="column">
-                            <button className="button is-danger" onClick={() => setEmailNotVerified(true)}>Mock Email is not verified</button>
+                            <button className="button is-danger" onClick={unverifyMail}>Mock Email is not verified</button>
                         </div>
 
                     </div>
@@ -166,7 +161,7 @@ export default function onboarding() {
                             </div>
                         </div>
                         <div className="column">
-                            <button className="button is-danger" onClick={() => setPaymentNotReceivable(true)}>Mock Payment is not receivable</button>
+                            <button className="button is-danger" onClick={paymentUnreceivable}>Mock Payment is not receivable</button>
                         </div>
 
                     </div>

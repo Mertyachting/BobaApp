@@ -11,7 +11,7 @@ import { loggedIn } from './login/page';
 import { Metadata } from 'next';
 
 
-export var email = 'sb-89a43m40169106@business.example.com'
+var email = 'sb-89a43m40169106@business.example.com'
 
 
 export const metadata: Metadata = {

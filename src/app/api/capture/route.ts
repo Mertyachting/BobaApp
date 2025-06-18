@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const url = 'https://api-m.sandbox.paypal.com';
-var access_token = await getAccessToken();
+const access_token = await getAccessToken();
 
-var jwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBU1l6WGpZQi1JMW9iTGNUYjN1QmQtVkpuUDFlQ3JKZ3lrUjMwX1JVcE9Gc1VYUUV3SFlzb29JRVJmdVdDZndEWEw5QmRIOTR1d0dKaTV6USIsInBheWVyX2lkIjoiRFZKQkczRUpWMllNSiIsImlhdCI6MTc0Nzc0MzA2MH0.J_eklbH6MPrrhn6BNeWLEYVAkOYOe_zsPJHKd9BUajM'
+const jwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBU1l6WGpZQi1JMW9iTGNUYjN1QmQtVkpuUDFlQ3JKZ3lrUjMwX1JVcE9Gc1VYUUV3SFlzb29JRVJmdVdDZndEWEw5QmRIOTR1d0dKaTV6USIsInBheWVyX2lkIjoiRFZKQkczRUpWMllNSiIsImlhdCI6MTc0Nzc0MzA2MH0.J_eklbH6MPrrhn6BNeWLEYVAkOYOe_zsPJHKd9BUajM'
 
 
 
 async function getAccessToken() {
-    let basis = 'http://192.168.178.34:3000'
+    const basis = 'http://192.168.178.34:3000'
     const res = await fetch(`${basis}/api/access_token`, {
         method: "POST",
         mode: "same-origin"
@@ -19,7 +19,6 @@ async function getAccessToken() {
     return access_token
 }
 
-//@ts-ignore
 export async function POST(request: NextRequest) {
     console.log('CAPTURE STATRED')
     const { orderID } = await request.json();

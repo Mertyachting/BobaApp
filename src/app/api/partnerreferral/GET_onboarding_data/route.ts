@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAccessToken } from "../../access_token/route";
+import { getAccessToken } from "@/app/helpers/helpers";
 
 
 const url = 'https://api-m.sandbox.paypal.com';

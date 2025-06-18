@@ -1,4 +1,4 @@
-import mysql from 'mysql2/promise';
+/*import mysql from 'mysql2/promise';
 
 export const pool = mysql.createPool({
     host: process.env.MYSQL_HOST,
@@ -23,4 +23,8 @@ export async function GET(request: Request) {
             headers: { 'Content-Type': 'application/json' },
         });
     }
+}*/
+
+export function GET() {
+
 }
