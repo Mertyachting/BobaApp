@@ -1,3 +1,4 @@
+'use client'
 
 import React from 'react';
 
@@ -7,6 +8,7 @@ import MasterSword from '../../../public/images/CoffeeBeans.png'
 import Image from 'next/image';
 import { NextResponse } from 'next/server';
 import { redirect } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
 
 
 
@@ -25,27 +27,23 @@ declare global {
     }
 }
 
-export async function getSDKToken() {
-    const res = await fetch('api/sdktoken', {
-        method: "POST"
-    })
-    const sdkToken = await res.json()
-    console.log(sdkToken)
-    return sdkToken
 
-}
 
-const sdk_token = await getSDKToken();
+
 
 
 export default function FastLane() {
+    const sdk_token = async () =>
+        fetch("api/sdktoken", { method: 'POST' })
+            .then((response) => response.json());
+
 
 
     const [email, setEmail] = useState('kite@lute.biz');
     const [payDisable, setPayDisable] = useState(true);
 
     //@ts-expect-error its hard coded 
-    let identity, profile, FastlanePaymentComponent, FastlaneWatermarkComponent;
+    let identity, FastlanePaymentComponent, FastlaneWatermarkComponent;
     //@ts-expect-error its hard coded
     let paymentComponent;
     /*
@@ -66,18 +64,31 @@ export default function FastLane() {
         window.submitButton();
     }
 
+    const {
+        data,
+        isPending,
+        error,
+    } = useQuery({
+        queryKey: ["sdk_tokens"],
+        queryFn: async () => sdk_token()
+    });
+
+    if (isPending) return 'Loading...'
+
+    if (error) return 'An error has occurred: ' + error.message
+
     return (
 
         <>
             <Script
                 src="https://www.paypal.com/sdk/js?client-id=ASYzXjYB-I1obLcTb3uBd-VJnP1eCrJgykR30_RUpOFsUXQEwHYsooIERfuWCfwDXL9BdH94uwGJi5zQ&merchant-id=DVJBG3EJV2YMJ&buyer-country=US&currency=USD&components=buttons,fastlane"
                 strategy="lazyOnload"
-                data-sdk-client-token={sdk_token}
+                data-sdk-client-token={data.access_token}
                 onLoad={async () => {
 
                     console.log(email);
 
-                    ({ identity, profile, FastlanePaymentComponent, FastlaneWatermarkComponent } =
+                    ({ identity, FastlanePaymentComponent, FastlaneWatermarkComponent } =
                         //@ts-expect-error its hard coded
                         await window.paypal.Fastlane({
                             // shippingAddressOptions: {
@@ -101,7 +112,7 @@ export default function FastLane() {
 
                         console.log('THE BUTTON WAS CLICKED!')
                         // Checks if email is empty or in a invalid format
-                        let emailOne = mail;
+                        const emailOne = mail;
 
                         console.log(emailOne)
 
@@ -122,7 +133,7 @@ export default function FastLane() {
                         let renderFastlaneMemberExperience = false;
                         const {
                             authenticationState,
-                            profileData
+                            //profileData
                             //@ts-expect-error its hard coded
                         } = await identity.triggerAuthenticationFlow(customerContextId);
 
@@ -135,17 +146,18 @@ export default function FastLane() {
                             // profileData contains their profile details 
 
                             renderFastlaneMemberExperience = true;
-
-                            const name = profileData.name;
-                            const shippingAddress = profileData.shippingAddress;
-                            const card = profileData.card;
+                            /*
+                                                        const name = profileData.name;
+                                                        const shippingAddress = profileData.shippingAddress;
+                                                        const card = profileData.card;
+                                                        */
                         } else {
                             // Member failed or canceled authentication. Treat them as a guest payer
-                            renderFastlaneMemberExperience = false;
                             setPayDisable(false)
+                            return renderFastlaneMemberExperience
+
                         }
-                        //@ts-expect-error
-                        //@ts-expect-error
+                        //@ts-expect-error its hard coded
                         const fastlanePaymentComponent = await paymentComponent;
 
                         await fastlanePaymentComponent.render("#payment-container");

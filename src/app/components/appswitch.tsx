@@ -2,8 +2,7 @@
 
 import React from "react";
 
-import { usePayPalCardFields, usePayPalButtons, PayPalCardFieldsForm } from "@paypal/react-paypal-js";
-import { NextResponse } from "next/server";
+import { usePayPalButtons } from "@paypal/react-paypal-js";
 import { v4 as uuidv4 } from 'uuid';
 import { useEffect } from "react";
 import MasterSword from '../../../public/images/CoffeeBeans.png'
@@ -16,9 +15,10 @@ export function generateUUID(): string {
 const base = 'http://192.168.178.34:3000';
 
 
-
+/*
 const client_id = process.env.NEXT_PUBLIC_CLIENT_ID ? process.env.NEXT_PUBLIC_CLIENT_ID : 'test';
 const merchant_id = process.env.NEXT_PUBLIC_MERCHANT_ID ? process.env.NEXT_PUBLIC_MERCHANT_ID : 'test';
+*/
 
 export default function AppSwitch() {
 
@@ -123,7 +123,7 @@ export default function AppSwitch() {
 
     }
 
-    //@ts-expect-error
+    //@ts-expect-error...
     async function onApprove(data) {
 
         console.log('onapprove is called.')

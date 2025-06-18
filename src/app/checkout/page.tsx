@@ -7,9 +7,6 @@ const merchant_id = process.env.NEXT_PUBLIC_MERCHANT_ID ? process.env.NEXT_PUBLI
 
 
 export default function Checkout() {
-
-
-
     const initialOptions = {
         clientId: client_id,
         currency: "USD",
@@ -17,7 +14,7 @@ export default function Checkout() {
         merchantId: merchant_id,
         buyerCountry: 'US',
         'data-partner-attribution-id': "Boba",
-        components: ['buttons', 'card-fields', 'applepay', 'googlepay'],
+        components: ['buttons'],
         'enable-funding': 'venmo'
     };
 

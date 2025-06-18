@@ -9,15 +9,13 @@ import { generateUUID } from "@/app/helpers/helpers";
 
 
 
-var access_token = await getAccessToken();
+const access_token = await getAccessToken();
 
-var jwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBU1l6WGpZQi1JMW9iTGNUYjN1QmQtVkpuUDFlQ3JKZ3lrUjMwX1JVcE9Gc1VYUUV3SFlzb29JRVJmdVdDZndEWEw5QmRIOTR1d0dKaTV6USIsInBheWVyX2lkIjoiRFZKQkczRUpWMllNSiIsImlhdCI6MTc0Nzc0MzA2MH0.J_eklbH6MPrrhn6BNeWLEYVAkOYOe_zsPJHKd9BUajM'
-
-
+const jwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBU1l6WGpZQi1JMW9iTGNUYjN1QmQtVkpuUDFlQ3JKZ3lrUjMwX1JVcE9Gc1VYUUV3SFlzb29JRVJmdVdDZndEWEw5QmRIOTR1d0dKaTV6USIsInBheWVyX2lkIjoiRFZKQkczRUpWMllNSiIsImlhdCI6MTc0Nzc0MzA2MH0.J_eklbH6MPrrhn6BNeWLEYVAkOYOe_zsPJHKd9BUajM'
 
 
 
-//@ts-expect-error
+
 export async function POST(req: NextRequest) {
     console.log(accessToken)
     // use the cart information passed from the front-end to calculate the purchase unit details

@@ -8,7 +8,7 @@ const partner_id = process.env.PARTNER_ID
 
 
 export async function GET(req: NextRequest) {
-    let tracking_id = await req.nextUrl.searchParams
+    const tracking_id = await req.nextUrl.searchParams
     console.log('FUCKING TRACKINMG ID ' + tracking_id)
 
     const access_token = await getAccessToken();

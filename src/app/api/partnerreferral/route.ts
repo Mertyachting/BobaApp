@@ -1,17 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAccessToken } from "@/app/helpers/helpers";
-import { generateUUID } from "@/app/helpers/helpers";
 
 
 
 export async function POST(req: NextRequest) {
-    let url = 'https://api-m.sandbox.paypal.com/v2/customer/partner-referrals'
+    const url = 'https://api-m.sandbox.paypal.com/v2/customer/partner-referrals'
     // const [access_token] = await pool.query('SELECT accesstoken FROM credentials ORDER BY time DESC LIMIT 1;');
     let mail = await req.json()
     mail = mail.email;
-    //@ts-expect-error
     //const accessToken = "A21AAJ32LijmP02E1NLqfZdC_P0WPYO_1yfWmmkCk_QKwfD55-6Bfpll6HhLawJD1WUhWrZsYfCNw8HiA2q7vV7-iBWdvb5_g";
-    let tracking_id = mail;
+    const tracking_id = mail;
 
 
 

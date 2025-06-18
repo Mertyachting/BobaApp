@@ -1,29 +1,24 @@
 'use client'
-import React, { useState } from "react";
-
-var logged_in = false;
-
-export function loggedIn() {
-    return logged_in = true;
-}
 
 
-
-export default function login() {
-    let test_email = 'sb-89a43m40169106@business.example.com';
-    let test_password = '123';
-    let [email, setEmail] = useState('');
-    let [password, setPassword] = useState('');
+export default function Login() {
+    //const test_email = 'sb-89a43m40169106@business.example.com';
+    //const test_password = '123';
+    //const [email, setEmail] = useState('');
+    //const [password, setPassword] = useState('');
 
 
 
-    function checkCredentials() {
-        if (email === test_email && password === test_password) {
-            loggedIn()
-        } else {
-            console.log('Wrong credentials');
+    /*
+        function checkCredentials() {
+            let login = false;
+            if (test_email && test_password) {
+                login = true;
+            } else {
+                console.log('Wrong credentials');
+            }
         }
-    }
+            */
 
     return (
         <>

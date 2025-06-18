@@ -6,12 +6,14 @@ import Image from 'next/image'
 
 import logo from "../../public/images/Monogram-OneColor-PayPal-RGB-White.png"
 import Link from 'next/link';
-import { loggedIn } from './login/page';
 
 import { Metadata } from 'next';
+import Providers from './providers';
 
 
-var email = 'sb-89a43m40169106@business.example.com'
+const email = 'sb-89a43m40169106@business.example.com'
+
+
 
 
 export const metadata: Metadata = {
@@ -19,12 +21,12 @@ export const metadata: Metadata = {
   description: 'Test App for PayPal SDK',
 };
 
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+
 
   return (
     <html lang="en">
@@ -42,16 +44,16 @@ export default function RootLayout({
 
           <div id="navbar" className="navbar-menu">
             <div className="navbar-start">
-              <a className="navbar-item" href="./onboarding">
+              <Link className="navbar-item" href="./onboarding">
                 Onboarding
-              </a>
+              </Link>
 
-              <a className="navbar-item" href='/'>
+              <Link className="navbar-item" href='/fastlane'>
                 FastLane
-              </a>
-              <a className="navbar-item" href='/checkout'>
+              </Link>
+              <Link className="navbar-item" href='/checkout'>
                 AppSwitch
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -61,10 +63,13 @@ export default function RootLayout({
             </div>
           </div>
         </nav>
+        <Providers>
+          {children}
+        </Providers>
 
-        {children}
 
       </body>
-    </html>
+    </html >
   );
+
 }
