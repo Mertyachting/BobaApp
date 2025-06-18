@@ -146,7 +146,7 @@ export interface PayPalCardFieldsComponentCreateVaultSetupToken
     createOrder?: never;
     createVaultSetupToken: () => Promise<string>;
 }
-
+ 
 export type PayPalCardFieldsComponentOptions =
     | PayPalCardFieldsComponentCreateOrder
     | PayPalCardFieldsComponentCreateVaultSetupToken;
