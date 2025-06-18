@@ -3,8 +3,6 @@ import 'bulma/css/bulma.min.css';
 import './globals.css';
 import Image from 'next/image'
 
-
-import logo from "../../public/images/Monogram-OneColor-PayPal-RGB-White.png"
 import Link from 'next/link';
 
 import { Metadata } from 'next';
@@ -12,8 +10,6 @@ import Providers from './providers';
 
 
 const email = 'sb-89a43m40169106@business.example.com'
-
-
 
 
 export const metadata: Metadata = {
@@ -35,7 +31,7 @@ export default function RootLayout({
         <nav className="navbar is-dark" role="navigation" aria-label="main navigation">
           <div className="navbar-brand">
             <Link className="navbar-item" href="/">
-              <Image src={logo} alt="picture of a helmet with a payments logo on it" width={20} height={64}>
+              <Image src="/images/Monogram-OneColor-PayPal-RGB-White.png" alt="picture of a helmet with a payments logo on it" width={20} height={64} style={{ width: 20, height: 64 }}>
               </Image>
               <h5 className='title is-5'> Beyond</h5>
             </Link>

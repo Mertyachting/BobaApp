@@ -153,7 +153,7 @@ export default function AppSwitch() {
         message: {
             // This amount is hard coded for demo purposes
             amount: 299.99,
-            position: "bottom",
+            position: "top",
             color: "white"
 
         },
