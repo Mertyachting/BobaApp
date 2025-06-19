@@ -35,10 +35,11 @@ export default function RootLayout({
               </Image>
               <h5 className='title is-5'> Beyond</h5>
             </Link>
+
           </div>
 
 
-          <div id="navbar" className="navbar-menu">
+          <div id="navMenu" className="navbar-menu is-active">
             <div className="navbar-start">
               <Link className="navbar-item" href="./onboarding">
                 Onboarding
