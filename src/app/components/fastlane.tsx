@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { NextResponse } from 'next/server';
 import { redirect } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
+import { Circle, Divide } from 'lucide-react';
 
 
 
@@ -28,11 +29,26 @@ declare global {
 }
 
 
+interface BillingAddo {
+    addressLine1: string,
+    addressLine2: string,
+    adminArea1: string,
+    adminArea2: string;
+    postalCode: string,
+    countryCode: string
+    phone: Phone;
+};
 
+interface Phone {
+    nationalNumber: string;
+    countryCode: string;
+};
 
 
 
 export default function FastLane() {
+
+
     const sdk_token = async () =>
         fetch("api/sdktoken", { method: 'POST' })
             .then((response) => response.json());
@@ -41,6 +57,7 @@ export default function FastLane() {
 
     const [email, setEmail] = useState('kite@lute.biz');
     const [payDisable, setPayDisable] = useState(true);
+    const [billing, setBilling] = useState({});
 
     //@ts-expect-error its hard coded 
     let identity, FastlanePaymentComponent, FastlaneWatermarkComponent;
@@ -73,7 +90,13 @@ export default function FastLane() {
         queryFn: async () => sdk_token()
     });
 
-    if (isPending) return 'Loading...'
+    if (isPending) return (
+        <div className="container">
+            <div className="notification is-primary">
+                <Circle />
+                <h4 className='title is-4'>Loading ...</h4>
+            </div>
+        </div>)
 
     if (error) return 'An error has occurred: ' + error.message
 
@@ -85,9 +108,6 @@ export default function FastLane() {
                 strategy="lazyOnload"
                 data-sdk-client-token={data.access_token}
                 onLoad={async () => {
-
-                    console.log(email);
-
                     ({ identity, FastlanePaymentComponent, FastlaneWatermarkComponent } =
                         //@ts-expect-error its hard coded
                         await window.paypal.Fastlane({
@@ -100,6 +120,8 @@ export default function FastLane() {
                             styles: { root: { backgroundColor: '#faf8f5' } }
                         }));
 
+                    console.log('here 1')
+
                     paymentComponent = await FastlanePaymentComponent();
 
                     const watermarkComponent = await FastlaneWatermarkComponent({
@@ -108,13 +130,13 @@ export default function FastLane() {
 
                     watermarkComponent.render('#watermark-container');
 
-                    window.lookupEmailProfile = async function lookupEmailProfile(mail: string) {
+                    window.lookupEmailProfile = async function lookupEmailProfile(mail: string, billing_address: BillingAddo) {
 
                         console.log('THE BUTTON WAS CLICKED!')
                         // Checks if email is empty or in a invalid format
                         const emailOne = mail;
 
-                        console.log(emailOne)
+                        console.log("The email is" + emailOne)
 
                         const isEmailValid = emailOne.length > 1 ? emailOne : null;
 
@@ -133,14 +155,15 @@ export default function FastLane() {
                         let renderFastlaneMemberExperience = false;
                         const {
                             authenticationState,
-                            //profileData
+                            profileData
                             //@ts-expect-error its hard coded
                         } = await identity.triggerAuthenticationFlow(customerContextId);
 
-                        console.log(authenticationState)
+
+
 
                         if (authenticationState === "succeeded") {
-                            console.log('MEMBER SUCESS')
+                            console.log('MEMBER SUCCESS')
                             setPayDisable(false)
                             // Fastlane member successfully authenticated themselves
                             // profileData contains their profile details 
@@ -151,6 +174,13 @@ export default function FastLane() {
                                                         const shippingAddress = profileData.shippingAddress;
                                                         const card = profileData.card;
                                                         */
+
+                            console.log(authenticationState)
+                            //billing_address = setBilling_address(profileData.card);
+
+                            setBilling(profileData.card.paymentSource.card.billingAddress)
+                            console.log(profileData.card.paymentSource.card.billingAddress)
+
                         } else {
                             // Member failed or canceled authentication. Treat them as a guest payer
                             setPayDisable(false)
@@ -240,8 +270,13 @@ export default function FastLane() {
                             })
 
                             if (res.status === 200) {
+                                /*
+                                const billing_address = await res.json();
+                                console.log('THE ID IS ' + JSON.stringify(billing_address.payment_source.card.bin_details))
+                                */
                                 redirect('/success')
                             }
+
 
                             return NextResponse.json(res);
                         }
@@ -270,18 +305,39 @@ export default function FastLane() {
                     <div
                         className="column"
                     >
-                        <button className="button is-link" onClick={() => window.lookupEmailProfile(email)}>check mail</button>
+                        <button className="button is-link" onClick={() => window.lookupEmailProfile(email, billing)}>check mail</button>
                     </div>
                 </div>
                 <div className='columns'>
                     <div className="column is-offset-2" id="watermark-container">
                     </div>
                 </div>
+
             </div >
             <div className="container is-mobile">
                 <div className="columns is-multiline">
                     <div className='column is-half'>
                         <div className='column is narrow' id="payment-container"></div>
+                        {billing ?
+                            <>
+                                <div className="columns">
+                                    <div className="box">
+                                        <h1 className='title is-4'>Billing Address</h1>
+                                        <ul>
+                                            <b>
+                                                <li>Street: {billing.addressLine1}</li>
+                                                <li>{billing.addressLine2}</li>
+                                                <li>State: {billing.adminArea1}</li>
+                                                <li>Area: {billing.adminArea2}</li>
+                                                <li>Country Code: {billing.countryCode}</li>
+                                                <li>Postal Code: {billing.postalCode}</li>
+                                            </b>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </>
+
+                            : <div></div>}
                     </div>
                     <div className="column is-half">
                         <div className="box">
