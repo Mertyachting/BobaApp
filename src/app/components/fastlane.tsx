@@ -57,7 +57,7 @@ export default function FastLane() {
 
     const [email, setEmail] = useState('kite@lute.biz');
     const [payDisable, setPayDisable] = useState(true);
-    const [billing, setBilling] = useState({});
+    const [billing, setBilling] = useState<BillingAddo | null>(null);
 
     //@ts-expect-error its hard coded 
     let identity, FastlanePaymentComponent, FastlaneWatermarkComponent;
