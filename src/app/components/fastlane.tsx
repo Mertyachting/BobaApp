@@ -9,7 +9,7 @@ import Image from 'next/image';
 import { NextResponse } from 'next/server';
 import { redirect } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { Circle, Divide } from 'lucide-react';
+import { Circle } from 'lucide-react';
 
 
 
@@ -159,9 +159,6 @@ export default function FastLane() {
                             //@ts-expect-error its hard coded
                         } = await identity.triggerAuthenticationFlow(customerContextId);
 
-
-
-
                         if (authenticationState === "succeeded") {
                             console.log('MEMBER SUCCESS')
                             setPayDisable(false)
@@ -177,8 +174,9 @@ export default function FastLane() {
 
                             console.log(authenticationState)
                             //billing_address = setBilling_address(profileData.card);
+                            billing_address = profileData.card.paymentSource.card.billingAddress
 
-                            setBilling(profileData.card.paymentSource.card.billingAddress)
+                            setBilling(billing_address)
                             console.log(profileData.card.paymentSource.card.billingAddress)
 
                         } else {
