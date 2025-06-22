@@ -10,3 +10,21 @@ body {
 * {
   box-sizing: border-box;
 }
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+.loading-animation {
+  animation: fadeInOut 1.5s ease-in-out infinite;
+}

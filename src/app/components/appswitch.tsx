@@ -76,10 +76,10 @@ export default function AppSwitch() {
             "paypal": {
                 "experience_context": {
                     "brand_name": "EXAMPLE INC",
-                    "cancel_url": "http://192.168.178.34:3000/success",
+                    "cancel_url": "https://qlpp.vercel.app/success",
                     "landing_page": "LOGIN",
                     "locale": "en-US",
-                    "return_url": "http://192.168.178.34:3000/success",
+                    "return_url": "https://qlpp.vercel.app/success",
                     "shipping_preference": "SET_PROVIDED_ADDRESS",
                     "user_action": "PAY_NOW",
                     "app_switch_preference": {

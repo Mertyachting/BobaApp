@@ -6,15 +6,9 @@ import Script from 'next/script';
 import { useState } from 'react';
 import MasterSword from '../../../public/images/CoffeeBeans.png'
 import Image from 'next/image';
-import { NextResponse } from 'next/server';
 import { redirect } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { Circle } from 'lucide-react';
-
-
-
-
-
 
 
 
@@ -46,18 +40,20 @@ interface Phone {
 
 
 
+
 export default function FastLane() {
-
-
-    const sdk_token = async () =>
-        fetch("api/sdktoken", { method: 'POST' })
-            .then((response) => response.json());
-
-
-
     const [email, setEmail] = useState('kite@lute.biz');
     const [payDisable, setPayDisable] = useState(true);
     const [billing, setBilling] = useState<BillingAddo | null>(null);
+    const [singleUseToken, setSingleUseToken] = useState<string | null>(null)
+    const [street, setStreet] = useState<string | null>(null);
+    const [state, setState] = useState<string | null>(null);
+    const [area, setArea] = useState<string | null>(null);
+    const [countryCode, setCountryCode] = useState<string | null>(null);
+    const [postalCode, setPostalCode] = useState<string | null>(null);
+
+
+    const queryClient = useQueryClient()
 
     //@ts-expect-error its hard coded 
     let identity, FastlanePaymentComponent, FastlaneWatermarkComponent;
@@ -77,219 +73,373 @@ export default function FastLane() {
     let memberAuthenticatedSuccessfully = false;
     */
 
+    const payload = {
+        "intent": "CAPTURE",
+        "payment_source": {
+            "card": {
+                "single_use_token": singleUseToken,
+                "experience_context": {
+                    "return_url": "http://192.168.178.34:3000/success"
+                },
+            }
+        },
+        "purchase_units": [
+            {
+                "amount": {
+                    "currency_code": "USD",
+                    "value": "309.99",
+                    "breakdown": {
+                        "item_total": {
+                            "currency_code": "USD",
+                            "value": "299.99"
+                        },
+                        "shipping": {
+                            "currency_code": "USD",
+                            "value": "10.00"
+                        }
+                    }
+                },
+                "items": [
+                    {
+                        "name": "Beyond Coffee",
+                        "description": "PayPal Special branded Coffee",
+                        "sku": "sku01",
+                        "unit_amount": {
+                            "currency_code": "USD",
+                            "value": "299.99"
+                        },
+                        "quantity": "1",
+                        "category": "PHYSICAL_GOODS",
+                        "image_url": "https://example.com/static/images/items/1/kona_coffee_beans.jpg",
+                        "url": "https://example.com/items/1/kona_coffee_beans",
+                    }
+                ],
+                "shipping": {
+                    "type": "SHIPPING",
+                    "name": {
+                        "full_name": "Steve Mobbs"
+                    },
+                    "address": {
+                        "address_line_1": "585 Moreno Ave",
+                        "admin_area_2": "Los Angeles",
+                        "admin_area_1": "CA", //must be sent in 2-letter format
+                        "postal_code": "90049",
+                        "country_code": "US"
+                    },
+                    "phone_number": {
+                        "country_code": "1",
+                        "national_number": "5555555555"
+                    }
+                }
+            }
+        ]
+    }
+
+
     function callSubmitButton() {
         window.submitButton();
     }
 
-    const {
-        data,
-        isPending,
-        error,
-    } = useQuery({
-        queryKey: ["sdk_tokens"],
-        queryFn: async () => sdk_token()
-    });
+    const sdk_token = async () => {
+        const res = await fetch("api/sdktoken",
+            { method: 'POST' }
+        )
+        const data = await res.json();
+        return data.access_token;
+    }
 
-    if (isPending) return (
-        <div className="container">
-            <div className="notification is-primary">
-                <Circle />
-                <h4 className='title is-4'>Loading ...</h4>
-            </div>
-        </div>)
+    const sdkTokens = useQuery({
+        queryKey: ['sdkToken'],
+        queryFn: sdk_token,
+    })
 
-    if (error) return 'An error has occurred: ' + error.message
+
+    const payment = async () => {
+        const res = await fetch('api/order', {
+            'method': 'POST',
+            'body': JSON.stringify(payload)
+        })
+        const data = res.json();
+        return data;
+    }
+
+    const orders = useQuery({
+        queryKey: ['order', singleUseToken],
+        queryFn: payment,
+        enabled: !!singleUseToken
+    })
+
+    const fetchToken = async () => {
+        await queryClient.prefetchQuery(
+            {
+                queryKey: ['sdktoken'],
+                queryFn: async () => await sdk_token(),
+                staleTime: 900
+            });
+    }
+
+    fetchToken();
+
+
 
     return (
 
         <>
-            <Script
-                src="https://www.paypal.com/sdk/js?client-id=ASYzXjYB-I1obLcTb3uBd-VJnP1eCrJgykR30_RUpOFsUXQEwHYsooIERfuWCfwDXL9BdH94uwGJi5zQ&merchant-id=DVJBG3EJV2YMJ&buyer-country=US&currency=USD&components=buttons,fastlane"
-                strategy="lazyOnload"
-                data-sdk-client-token={data.access_token}
-                onLoad={async () => {
-                    ({ identity, FastlanePaymentComponent, FastlaneWatermarkComponent } =
-                        //@ts-expect-error its hard coded
-                        await window.paypal.Fastlane({
-                            // shippingAddressOptions: {
-                            //   allowedLocations: ['US:TX', 'US:CA', 'MX', 'CA:AB', 'CA:ON'],
-                            // },
-                            // cardOptions: {
-                            //   allowedBrands: ['VISA', 'MASTER_CARD'],
-                            // },
-                            styles: { root: { backgroundColor: '#faf8f5' } }
-                        }));
+            {orders.isFetching ? (
+                <>
+                    <div className="container">
+                        <div className="notification is-primary loading-animation">
+                            <h4 className='title is-4'>Your order is being processed... <Circle /> </h4>
+                        </div>
+                    </div>
+                </>
+            ) :
+                <>
+                </>
 
-                    console.log('here 1')
+            }
 
-                    paymentComponent = await FastlanePaymentComponent();
+            {orders.error ? (
+                <>
+                    <div className="container">
+                        <div className="notification is-primary loading-animation">
+                            <h4 className='title is-4'>{orders.error.message} </h4>
+                        </div>
+                    </div>
+                </>
+            ) :
+                <>
+                </>
 
-                    const watermarkComponent = await FastlaneWatermarkComponent({
-                        includeAdditionalInfo: true,
-                    });
+            }
 
-                    watermarkComponent.render('#watermark-container');
 
-                    window.lookupEmailProfile = async function lookupEmailProfile(mail: string, billing_address: BillingAddo) {
 
-                        console.log('THE BUTTON WAS CLICKED!')
-                        // Checks if email is empty or in a invalid format
-                        const emailOne = mail;
 
-                        console.log("The email is" + emailOne)
 
-                        const isEmailValid = emailOne.length > 1 ? emailOne : null;
+            {sdkTokens.isPending ? (
+                <>
+                    <div className="container">
+                        <div className="notification is-primary loading-animation">
+                            <h4 className='title is-4'>Loading SDK Token <Circle /> </h4>
+                        </div>
+                    </div>
+                </>
+            ) :
+                <>
+                    <Script
+                        src="https://www.paypal.com/sdk/js?client-id=ASYzXjYB-I1obLcTb3uBd-VJnP1eCrJgykR30_RUpOFsUXQEwHYsooIERfuWCfwDXL9BdH94uwGJi5zQ&merchant-id=DVJBG3EJV2YMJ&buyer-country=US&currency=USD&components=buttons,fastlane"
+                        strategy="lazyOnload"
+                        data-sdk-client-token={queryClient.getQueryData(['sdkToken'])}
+                        onLoad={
+                            async () => {
+                                ({ identity, FastlanePaymentComponent, FastlaneWatermarkComponent } =
+                                    //@ts-expect-error its hard coded
+                                    await window.paypal.Fastlane({
+                                        // shippingAddressOptions: {
+                                        //   allowedLocations: ['US:TX', 'US:CA', 'MX', 'CA:AB', 'CA:ON'],
+                                        // },
+                                        // cardOptions: {
+                                        //   allowedBrands: ['VISA', 'MASTER_CARD'],
+                                        // },
+                                        styles: { root: { backgroundColor: '#faf8f5' } }
+                                    }));
 
-                        if (!isEmailValid) {
-                            alert('please enter a valid email')
-                            return;
-                        }
+                                console.log('here 1')
 
-                        console.log(isEmailValid)
+                                paymentComponent = await FastlanePaymentComponent();
 
-                        //@ts-expect-error its hard coded
-                        const { customerContextId } = await identity.lookupCustomerByEmail(
-                            emailOne,
-                        );
+                                const watermarkComponent = await FastlaneWatermarkComponent({
+                                    includeAdditionalInfo: true,
+                                });
 
-                        let renderFastlaneMemberExperience = false;
-                        const {
-                            authenticationState,
-                            profileData
-                            //@ts-expect-error its hard coded
-                        } = await identity.triggerAuthenticationFlow(customerContextId);
+                                watermarkComponent.render('#watermark-container');
 
-                        if (authenticationState === "succeeded") {
-                            console.log('MEMBER SUCCESS')
-                            setPayDisable(false)
-                            // Fastlane member successfully authenticated themselves
-                            // profileData contains their profile details 
+                                window.lookupEmailProfile = async function lookupEmailProfile(mail: string, billing_address: BillingAddo) {
 
-                            renderFastlaneMemberExperience = true;
-                            /*
-                                                        const name = profileData.name;
-                                                        const shippingAddress = profileData.shippingAddress;
-                                                        const card = profileData.card;
-                                                        */
+                                    console.log('THE BUTTON WAS CLICKED!')
+                                    // Checks if email is empty or in a invalid format
+                                    const emailOne = mail;
 
-                            console.log(authenticationState)
-                            //billing_address = setBilling_address(profileData.card);
-                            billing_address = profileData.card.paymentSource.card.billingAddress
+                                    console.log("The email is" + emailOne)
 
-                            setBilling(billing_address)
-                            console.log(profileData.card.paymentSource.card.billingAddress)
+                                    const isEmailValid = emailOne.length > 1 ? emailOne : null;
 
-                        } else {
-                            // Member failed or canceled authentication. Treat them as a guest payer
-                            setPayDisable(false)
-                            return renderFastlaneMemberExperience
-
-                        }
-                        //@ts-expect-error its hard coded
-                        const fastlanePaymentComponent = await paymentComponent;
-
-                        await fastlanePaymentComponent.render("#payment-container");
-                    }
-
-                    window.submitButton = async function () {
-                        //@ts-expect-error its hard coded
-                        const fastlanePaymentComponent = await paymentComponent;
-
-                        // event listener when the user clicks to place the order
-
-                        const { id } = await fastlanePaymentComponent.getPaymentToken();
-                        console.log('THE ID IS ' + id)
-                        const payload = {
-                            "intent": "CAPTURE",
-                            "payment_source": {
-                                "card": {
-                                    "single_use_token": id,
-                                    "experience_context": {
-                                        "return_url": "http://192.168.178.34:3000/success"
+                                    if (!isEmailValid) {
+                                        alert('please enter a valid email')
+                                        return;
                                     }
+
+                                    console.log(isEmailValid)
+
+                                    //@ts-expect-error its hard coded
+                                    const { customerContextId } = await identity.lookupCustomerByEmail(
+                                        emailOne,
+                                    );
+
+                                    let renderFastlaneMemberExperience = false;
+                                    const {
+                                        authenticationState,
+                                        profileData
+                                        //@ts-expect-error its hard coded
+                                    } = await identity.triggerAuthenticationFlow(customerContextId);
+
+                                    if (profileData) {
+                                        billing_address = profileData.card.paymentSource.card.billingAddress
+
+                                        setBilling(billing_address)
+
+                                        setArea(billing_address.adminArea2)
+                                        setStreet(billing_address.addressLine1)
+                                        setState(billing_address.adminArea1)
+                                        setCountryCode(billing_address.adminArea1)
+                                        setPostalCode(billing_address.postalCode)
+
+                                        console.log(profileData.card.paymentSource.card.billingAddress)
+
+                                    }
+
+                                    if (authenticationState === "succeeded") {
+                                        console.log('MEMBER SUCCESS')
+                                        setPayDisable(false)
+                                        // Fastlane member successfully authenticated themselves
+                                        // profileData contains their profile details 
+
+                                        renderFastlaneMemberExperience = true;
+                                        /*
+                                                                    const name = profileData.name;
+                                                                    const shippingAddress = profileData.shippingAddress;
+                                                                    const card = profileData.card;
+                                                                    */
+
+                                        console.log(authenticationState)
+                                        //billing_address = setBilling_address(profileData.card);
+
+
+                                    } else {
+                                        // Member failed or canceled authentication. Treat them as a guest payer
+                                        setPayDisable(false)
+                                        return renderFastlaneMemberExperience
+
+                                    }
+                                    //@ts-expect-error its hard coded
+                                    const fastlanePaymentComponent = await paymentComponent;
+
+                                    await fastlanePaymentComponent.render("#payment-container");
                                 }
-                            },
-                            "purchase_units": [
-                                {
-                                    "amount": {
-                                        "currency_code": "USD",
-                                        "value": "309.99",
-                                        "breakdown": {
-                                            "item_total": {
-                                                "currency_code": "USD",
-                                                "value": "299.99"
-                                            },
-                                            "shipping": {
-                                                "currency_code": "USD",
-                                                "value": "10.00"
+
+                                window.submitButton = async function (singleUseToken: string) {
+                                    //@ts-expect-error its hard coded
+                                    const fastlanePaymentComponent = await paymentComponent;
+
+                                    // event listener when the user clicks to place the order
+
+                                    const { id } = await fastlanePaymentComponent.getPaymentToken();
+                                    console.log('THE ID IS ' + id)
+
+                                    /*
+                                    const payload = {
+                                        "intent": "CAPTURE",
+                                        "payment_source": {
+                                            "card": {
+                                                "single_use_token": id,
+                                                "experience_context": {
+                                                    "return_url": "http://192.168.178.34:3000/success"
+                                                }
                                             }
-                                        }
-                                    },
-                                    "items": [
-                                        {
-                                            "name": "Beyond Coffee",
-                                            "description": "PayPal Special branded Coffee",
-                                            "sku": "sku01",
-                                            "unit_amount": {
-                                                "currency_code": "USD",
-                                                "value": "299.99"
-                                            },
-                                            "quantity": "1",
-                                            "category": "PHYSICAL_GOODS",
-                                            "image_url": "https://example.com/static/images/items/1/kona_coffee_beans.jpg",
-                                            "url": "https://example.com/items/1/kona_coffee_beans",
-                                        }
-                                    ],
-                                    "shipping": {
-                                        "type": "SHIPPING",
-                                        "name": {
-                                            "full_name": "Steve Mobbs"
                                         },
-                                        "address": {
-                                            "address_line_1": "585 Moreno Ave",
-                                            "admin_area_2": "Los Angeles",
-                                            "admin_area_1": "CA", //must be sent in 2-letter format
-                                            "postal_code": "90049",
-                                            "country_code": "US"
-                                        },
-                                        "phone_number": {
-                                            "country_code": "1",
-                                            "national_number": "5555555555"
-                                        }
+                                        "purchase_units": [
+                                            {
+                                                "amount": {
+                                                    "currency_code": "USD",
+                                                    "value": "309.99",
+                                                    "breakdown": {
+                                                        "item_total": {
+                                                            "currency_code": "USD",
+                                                            "value": "299.99"
+                                                        },
+                                                        "shipping": {
+                                                            "currency_code": "USD",
+                                                            "value": "10.00"
+                                                        }
+                                                    }
+                                                },
+                                                "items": [
+                                                    {
+                                                        "name": "Beyond Coffee",
+                                                        "description": "PayPal Special branded Coffee",
+                                                        "sku": "sku01",
+                                                        "unit_amount": {
+                                                            "currency_code": "USD",
+                                                            "value": "299.99"
+                                                        },
+                                                        "quantity": "1",
+                                                        "category": "PHYSICAL_GOODS",
+                                                        "image_url": "https://example.com/static/images/items/1/kona_coffee_beans.jpg",
+                                                        "url": "https://example.com/items/1/kona_coffee_beans",
+                                                    }
+                                                ],
+                                                "shipping": {
+                                                    "type": "SHIPPING",
+                                                    "name": {
+                                                        "full_name": "Steve Mobbs"
+                                                    },
+                                                    "address": {
+                                                        "address_line_1": "585 Moreno Ave",
+                                                        "admin_area_2": "Los Angeles",
+                                                        "admin_area_1": "CA", //must be sent in 2-letter format
+                                                        "postal_code": "90049",
+                                                        "country_code": "US"
+                                                    },
+                                                    "phone_number": {
+                                                        "country_code": "1",
+                                                        "national_number": "5555555555"
+                                                    }
+                                                }
+                                            }
+                                        ]
                                     }
+                                        */
+
+                                    if (await id) {
+                                        singleUseToken = id;
+                                        setSingleUseToken(singleUseToken);
+
+
+                                        /*  
+                                        
+                                        const res = await fetch('api/order', {
+                                              'method': 'POST',
+                                              'body': JSON.stringify(payload)
+                                          })
+  
+                                          if (res.status === 200) {
+                                          
+                                              const billing_address = await res.json();
+                                              console.log('THE ID IS ' + JSON.stringify(billing_address.payment_source.card.bin_details))
+                                              
+                                              redirect('/success')
+                                          }
+  
+  
+                                          return NextResponse.json(res);
+  
+                                          */
+
+                                    }
+                                    else (console.log('no ID found'))
+                                        ;
                                 }
-                            ]
-                        }
-
-                        if (await id) {
-                            const res = await fetch('api/order', {
-                                'method': 'POST',
-                                'body': JSON.stringify(payload)
-                            })
-
-                            if (res.status === 200) {
-                                /*
-                                const billing_address = await res.json();
-                                console.log('THE ID IS ' + JSON.stringify(billing_address.payment_source.card.bin_details))
-                                */
-                                redirect('/success')
                             }
-
-
-                            return NextResponse.json(res);
                         }
-                        else (console.log('no ID found'))
-                            ;
-                    }
-                }
-                }
-                onError={(e) => {
-                    console.error('Script failed to load', e)
-                }}
-            />
-            <link rel="preload" href="https://www.paypalobjects.com/fastlane-v1/assets/fastlane-with-tooltip_en_sm_light.0808.svg" as="image" type="image/avif" />
-            <link rel="preload" href="https://www.paypalobjects.com/fastlane-v1/assets/fastlane_en_sm_light" />
-
+                        onError={(e) => {
+                            console.error('Script failed to load', e)
+                        }}
+                    />
+                    <link rel="preload" href="https://www.paypalobjects.com/fastlane-v1/assets/fastlane-with-tooltip_en_sm_light.0808.svg" as="image" type="image/avif" />
+                    <link rel="preload" href="https://www.paypalobjects.com/fastlane-v1/assets/fastlane_en_sm_light" />
+                </>
+            }
             <div
                 className="container is mobile"
             >
@@ -310,32 +460,109 @@ export default function FastLane() {
                     <div className="column is-offset-2" id="watermark-container">
                     </div>
                 </div>
+            </div>
 
-            </div >
             <div className="container is-mobile">
                 <div className="columns is-multiline">
                     <div className='column is-half'>
-                        <div className='column is narrow' id="payment-container"></div>
+                        <div className='column is narrow' id="payment-container">
+                        </div>
+                        <div className="box">
+                            <h1 className="title is-4">Billing Address</h1>
+                        </div>
                         {billing ?
                             <>
-                                <div className="columns">
-                                    <div className="box">
-                                        <h1 className='title is-4'>Billing Address</h1>
-                                        <ul>
-                                            <b>
-                                                <li>Street: {billing.addressLine1}</li>
-                                                <li>{billing.addressLine2}</li>
-                                                <li>State: {billing.adminArea1}</li>
-                                                <li>Area: {billing.adminArea2}</li>
-                                                <li>Country Code: {billing.countryCode}</li>
-                                                <li>Postal Code: {billing.postalCode}</li>
-                                            </b>
-                                        </ul>
+
+
+                                <div className="field">
+                                    <label className="label">Street</label>
+                                    <div className="control">
+                                        <input
+                                            className="input"
+                                            type="text"
+                                            name="addressLine1"
+                                            value={billing.addressLine1}
+                                            readOnly
+                                        />
                                     </div>
                                 </div>
+
+                                {billing.addressLine2 && (
+                                    <div className="field">
+                                        <label className="label">Street (Line 2)</label>
+                                        <div className="control">
+                                            <input
+                                                className="input"
+                                                type="text"
+                                                name="addressLine2"
+                                                value={billing.addressLine2}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="field">
+                                    <label className="label">State</label>
+                                    <div className="control">
+                                        <input
+                                            className="input"
+                                            type="text"
+                                            name="adminArea1"
+                                            value={billing.adminArea1}
+                                            readOnly
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="field">
+                                    <label className="label">Area</label>
+                                    <div className="control">
+                                        <input
+                                            className="input"
+                                            type="text"
+                                            name="adminArea2"
+                                            value={billing.adminArea2}
+                                            readOnly
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="field">
+                                    <label className="label">Country Code</label>
+                                    <div className="control">
+                                        <input
+                                            className="input"
+                                            type="text"
+                                            name="countryCode"
+                                            value={billing.countryCode}
+                                            readOnly
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="field">
+                                    <label className="label">Postal Code</label>
+                                    <div className="control">
+                                        <input
+                                            className="input"
+                                            type="text"
+                                            name="postalCode"
+                                            value={billing.postalCode}
+                                            readOnly
+                                        />
+                                    </div>
+                                </div>
+
                             </>
 
-                            : <div></div>}
+                            :
+
+                            <>
+
+                            </>
+                        }
+
                     </div>
                     <div className="column is-half">
                         <div className="box">
@@ -382,8 +609,29 @@ export default function FastLane() {
                     </div>
 
                 </div>
-            </div>
+            </div >
 
+
+            {orders.data ? (
+                <>
+                    <div className="container">
+                        <div className="notification is-primary">
+                            <div className="title">
+                                <h1 className="title is-4">Single Use Token: {singleUseToken}</h1>
+                            </div>
+                            <div className='content'>
+                                <p className='has-text-weight-bold'>
+                                    {JSON.stringify(orders.data, null, '\t')}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            ) :
+                <>
+                </>
+
+            }
         </>
     );
 
