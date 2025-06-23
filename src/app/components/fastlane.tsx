@@ -14,7 +14,7 @@ import { Circle } from 'lucide-react';
 
 declare global {
     interface Window {
-        lookupEmailProfile: (email: string, billing: BillingAddo) => void;
+        lookupEmailProfile: (email: string) => void;
         submitButton: (token: string) => Promise<void>;
     }
 }
