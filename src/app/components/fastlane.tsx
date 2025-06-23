@@ -15,7 +15,7 @@ import { Circle } from 'lucide-react';
 declare global {
     interface Window {
         lookupEmailProfile: (email: string) => void;
-        submitButton: (token: string) => Promise<void>;
+        submitButton: () => Promise<void>;
     }
 }
 
@@ -134,13 +134,13 @@ export default function FastLane() {
     }
 
 
-    function callSubmitButton(token: string) {
-        window.submitButton(token);
+    function callSubmitButton() {
+        window.submitButton();
     };
 
-    function callEmailLookUp(email: string, billing: BillingAddo) {
+    function callEmailLookUp(email: string) {
         if (typeof window !== "undefined") {
-            window.lookupEmailProfile(email, billing);
+            window.lookupEmailProfile(email);
         }
     };
 
@@ -337,7 +337,7 @@ export default function FastLane() {
                                         await fastlanePaymentComponent.render("#payment-container");
                                     }
 
-                                    window.submitButton = async function (singleUseToken: string) {
+                                    window.submitButton = async function () {
                                         //@ts-expect-error its hard coded
                                         const fastlanePaymentComponent = await paymentComponent;
 
@@ -411,7 +411,7 @@ export default function FastLane() {
                                             */
 
                                         if (await id) {
-                                            singleUseToken = id;
+                                            const singleUseToken = id;
                                             setSingleUseToken(singleUseToken);
 
 
@@ -615,7 +615,7 @@ export default function FastLane() {
                                 </div>
                             </article>
                         </div>
-                        <button className="button is-link is-large is-fullwidth" id="submit-button" onClick={callSubmitButton} disabled={payDisable}>Pay</button>
+                        <button className="button is-link is-large is-fullwidth" id="submit-button" onClick={() => callSubmitButton()} disabled={payDisable}>Pay</button>
                     </div>
 
                 </div>
