@@ -262,7 +262,7 @@ export default function FastLane() {
                                 if (typeof window !== "undefined") {
                                     // Client-side-only code
 
-                                    window.lookupEmailProfile = async function (mail: string, billing_address: BillingAddo) {
+                                    window.lookupEmailProfile = async function (mail: string) {
 
                                         console.log('THE BUTTON WAS CLICKED!')
                                         // Checks if email is empty or in a invalid format
@@ -292,15 +292,17 @@ export default function FastLane() {
                                         } = await identity.triggerAuthenticationFlow(customerContextId);
 
                                         if (profileData) {
-                                            billing_address = profileData.card.paymentSource.card.billingAddress
+                                            const billing_address = profileData.card.paymentSource.card.billingAddress
 
                                             setBilling(billing_address)
+                                            if (billing_address) {
+                                                setArea(billing_address.adminArea2)
+                                                setStreet(billing_address.addressLine1)
+                                                setState(billing_address.adminArea1)
+                                                setCountryCode(billing_address.adminArea1)
+                                                setPostalCode(billing_address.postalCode)
+                                            }
 
-                                            setArea(billing_address.adminArea2)
-                                            setStreet(billing_address.addressLine1)
-                                            setState(billing_address.adminArea1)
-                                            setCountryCode(billing_address.adminArea1)
-                                            setPostalCode(billing_address.postalCode)
 
                                             console.log(profileData.card.paymentSource.card.billingAddress)
 
@@ -461,7 +463,7 @@ export default function FastLane() {
                     <div
                         className="column"
                     >
-                        <button className="button is-link" onClick={() => callEmailLookUp(email, billing)}>check mail</button>
+                        <button className="button is-link" onClick={() => callEmailLookUp(email)}>check mail</button>
                     </div>
                 </div>
                 <div className='columns'>
@@ -503,7 +505,7 @@ export default function FastLane() {
                                                 className="input"
                                                 type="text"
                                                 name="addressLine2"
-                                                value={billing.addressLine2}
+                                                value={billing?.addressLine2}
                                                 readOnly
                                             />
                                         </div>
