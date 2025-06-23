@@ -6,7 +6,6 @@ import Script from 'next/script';
 import { useState } from 'react';
 import MasterSword from '../../../public/images/CoffeeBeans.png'
 import Image from 'next/image';
-import { redirect } from 'next/navigation';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { Circle } from 'lucide-react';
 
@@ -15,10 +14,8 @@ import { Circle } from 'lucide-react';
 
 declare global {
     interface Window {
-        //@ts-expect-error its hard coded
-        lookupEmailProfile;
-        //@ts-expect-error its hard coded
-        submitButton;
+        lookupEmailProfile: (email: string, billing: BillingAddo) => void;
+        submitButton: (token: string) => Promise<void>;
     }
 }
 
@@ -45,12 +42,13 @@ export default function FastLane() {
     const [email, setEmail] = useState('kite@lute.biz');
     const [payDisable, setPayDisable] = useState(true);
     const [billing, setBilling] = useState<BillingAddo | null>(null);
-    const [singleUseToken, setSingleUseToken] = useState<string | null>(null)
-    const [street, setStreet] = useState<string | null>(null);
-    const [state, setState] = useState<string | null>(null);
-    const [area, setArea] = useState<string | null>(null);
-    const [countryCode, setCountryCode] = useState<string | null>(null);
-    const [postalCode, setPostalCode] = useState<string | null>(null);
+    const [singleUseToken, setSingleUseToken] = useState<string | null>(null);
+    const [street, setStreet] = useState('');
+    const [state, setState] = useState('');
+    const [area, setArea] = useState('');
+    const [countryCode, setCountryCode] = useState('');
+    const [postalCode, setPostalCode] = useState('');
+
 
 
     const queryClient = useQueryClient()
@@ -136,9 +134,15 @@ export default function FastLane() {
     }
 
 
-    function callSubmitButton() {
-        window.submitButton();
-    }
+    function callSubmitButton(token: string) {
+        window.submitButton(token);
+    };
+
+    function callEmailLookUp(email: string, billing: BillingAddo) {
+        if (typeof window !== "undefined") {
+            window.lookupEmailProfile(email, billing);
+        }
+    };
 
     const sdk_token = async () => {
         const res = await fetch("api/sdktoken",
@@ -255,180 +259,184 @@ export default function FastLane() {
 
                                 watermarkComponent.render('#watermark-container');
 
-                                window.lookupEmailProfile = async function lookupEmailProfile(mail: string, billing_address: BillingAddo) {
+                                if (typeof window !== "undefined") {
+                                    // Client-side-only code
 
-                                    console.log('THE BUTTON WAS CLICKED!')
-                                    // Checks if email is empty or in a invalid format
-                                    const emailOne = mail;
+                                    window.lookupEmailProfile = async function (mail: string, billing_address: BillingAddo) {
 
-                                    console.log("The email is" + emailOne)
+                                        console.log('THE BUTTON WAS CLICKED!')
+                                        // Checks if email is empty or in a invalid format
+                                        const emailOne = mail;
 
-                                    const isEmailValid = emailOne.length > 1 ? emailOne : null;
+                                        console.log("The email is" + emailOne)
 
-                                    if (!isEmailValid) {
-                                        alert('please enter a valid email')
-                                        return;
-                                    }
+                                        const isEmailValid = emailOne.length > 1 ? emailOne : null;
 
-                                    console.log(isEmailValid)
+                                        if (!isEmailValid) {
+                                            alert('please enter a valid email')
+                                            return;
+                                        }
 
-                                    //@ts-expect-error its hard coded
-                                    const { customerContextId } = await identity.lookupCustomerByEmail(
-                                        emailOne,
-                                    );
+                                        console.log(isEmailValid)
 
-                                    let renderFastlaneMemberExperience = false;
-                                    const {
-                                        authenticationState,
-                                        profileData
                                         //@ts-expect-error its hard coded
-                                    } = await identity.triggerAuthenticationFlow(customerContextId);
+                                        const { customerContextId } = await identity.lookupCustomerByEmail(
+                                            emailOne,
+                                        );
 
-                                    if (profileData) {
-                                        billing_address = profileData.card.paymentSource.card.billingAddress
+                                        let renderFastlaneMemberExperience = false;
+                                        const {
+                                            authenticationState,
+                                            profileData
+                                            //@ts-expect-error its hard coded
+                                        } = await identity.triggerAuthenticationFlow(customerContextId);
 
-                                        setBilling(billing_address)
+                                        if (profileData) {
+                                            billing_address = profileData.card.paymentSource.card.billingAddress
 
-                                        setArea(billing_address.adminArea2)
-                                        setStreet(billing_address.addressLine1)
-                                        setState(billing_address.adminArea1)
-                                        setCountryCode(billing_address.adminArea1)
-                                        setPostalCode(billing_address.postalCode)
+                                            setBilling(billing_address)
 
-                                        console.log(profileData.card.paymentSource.card.billingAddress)
+                                            setArea(billing_address.adminArea2)
+                                            setStreet(billing_address.addressLine1)
+                                            setState(billing_address.adminArea1)
+                                            setCountryCode(billing_address.adminArea1)
+                                            setPostalCode(billing_address.postalCode)
 
+                                            console.log(profileData.card.paymentSource.card.billingAddress)
+
+                                        }
+
+                                        if (authenticationState === "succeeded") {
+                                            console.log('MEMBER SUCCESS')
+                                            setPayDisable(false)
+                                            // Fastlane member successfully authenticated themselves
+                                            // profileData contains their profile details 
+
+                                            renderFastlaneMemberExperience = true;
+                                            /*
+                                                                        const name = profileData.name;
+                                                                        const shippingAddress = profileData.shippingAddress;
+                                                                        const card = profileData.card;
+                                                                        */
+
+                                            console.log(authenticationState)
+                                            //billing_address = setBilling_address(profileData.card);
+
+
+                                        } else {
+                                            // Member failed or canceled authentication. Treat them as a guest payer
+                                            setPayDisable(false)
+                                            return renderFastlaneMemberExperience
+
+                                        }
+                                        //@ts-expect-error its hard coded
+                                        const fastlanePaymentComponent = await paymentComponent;
+
+                                        await fastlanePaymentComponent.render("#payment-container");
                                     }
 
-                                    if (authenticationState === "succeeded") {
-                                        console.log('MEMBER SUCCESS')
-                                        setPayDisable(false)
-                                        // Fastlane member successfully authenticated themselves
-                                        // profileData contains their profile details 
+                                    window.submitButton = async function (singleUseToken: string) {
+                                        //@ts-expect-error its hard coded
+                                        const fastlanePaymentComponent = await paymentComponent;
 
-                                        renderFastlaneMemberExperience = true;
+                                        // event listener when the user clicks to place the order
+
+                                        const { id } = await fastlanePaymentComponent.getPaymentToken();
+                                        console.log('THE ID IS ' + id)
+
                                         /*
-                                                                    const name = profileData.name;
-                                                                    const shippingAddress = profileData.shippingAddress;
-                                                                    const card = profileData.card;
-                                                                    */
-
-                                        console.log(authenticationState)
-                                        //billing_address = setBilling_address(profileData.card);
-
-
-                                    } else {
-                                        // Member failed or canceled authentication. Treat them as a guest payer
-                                        setPayDisable(false)
-                                        return renderFastlaneMemberExperience
-
-                                    }
-                                    //@ts-expect-error its hard coded
-                                    const fastlanePaymentComponent = await paymentComponent;
-
-                                    await fastlanePaymentComponent.render("#payment-container");
-                                }
-
-                                window.submitButton = async function (singleUseToken: string) {
-                                    //@ts-expect-error its hard coded
-                                    const fastlanePaymentComponent = await paymentComponent;
-
-                                    // event listener when the user clicks to place the order
-
-                                    const { id } = await fastlanePaymentComponent.getPaymentToken();
-                                    console.log('THE ID IS ' + id)
-
-                                    /*
-                                    const payload = {
-                                        "intent": "CAPTURE",
-                                        "payment_source": {
-                                            "card": {
-                                                "single_use_token": id,
-                                                "experience_context": {
-                                                    "return_url": "http://192.168.178.34:3000/success"
+                                        const payload = {
+                                            "intent": "CAPTURE",
+                                            "payment_source": {
+                                                "card": {
+                                                    "single_use_token": id,
+                                                    "experience_context": {
+                                                        "return_url": "http://192.168.178.34:3000/success"
+                                                    }
                                                 }
-                                            }
-                                        },
-                                        "purchase_units": [
-                                            {
-                                                "amount": {
-                                                    "currency_code": "USD",
-                                                    "value": "309.99",
-                                                    "breakdown": {
-                                                        "item_total": {
-                                                            "currency_code": "USD",
-                                                            "value": "299.99"
+                                            },
+                                            "purchase_units": [
+                                                {
+                                                    "amount": {
+                                                        "currency_code": "USD",
+                                                        "value": "309.99",
+                                                        "breakdown": {
+                                                            "item_total": {
+                                                                "currency_code": "USD",
+                                                                "value": "299.99"
+                                                            },
+                                                            "shipping": {
+                                                                "currency_code": "USD",
+                                                                "value": "10.00"
+                                                            }
+                                                        }
+                                                    },
+                                                    "items": [
+                                                        {
+                                                            "name": "Beyond Coffee",
+                                                            "description": "PayPal Special branded Coffee",
+                                                            "sku": "sku01",
+                                                            "unit_amount": {
+                                                                "currency_code": "USD",
+                                                                "value": "299.99"
+                                                            },
+                                                            "quantity": "1",
+                                                            "category": "PHYSICAL_GOODS",
+                                                            "image_url": "https://example.com/static/images/items/1/kona_coffee_beans.jpg",
+                                                            "url": "https://example.com/items/1/kona_coffee_beans",
+                                                        }
+                                                    ],
+                                                    "shipping": {
+                                                        "type": "SHIPPING",
+                                                        "name": {
+                                                            "full_name": "Steve Mobbs"
                                                         },
-                                                        "shipping": {
-                                                            "currency_code": "USD",
-                                                            "value": "10.00"
+                                                        "address": {
+                                                            "address_line_1": "585 Moreno Ave",
+                                                            "admin_area_2": "Los Angeles",
+                                                            "admin_area_1": "CA", //must be sent in 2-letter format
+                                                            "postal_code": "90049",
+                                                            "country_code": "US"
+                                                        },
+                                                        "phone_number": {
+                                                            "country_code": "1",
+                                                            "national_number": "5555555555"
                                                         }
                                                     }
-                                                },
-                                                "items": [
-                                                    {
-                                                        "name": "Beyond Coffee",
-                                                        "description": "PayPal Special branded Coffee",
-                                                        "sku": "sku01",
-                                                        "unit_amount": {
-                                                            "currency_code": "USD",
-                                                            "value": "299.99"
-                                                        },
-                                                        "quantity": "1",
-                                                        "category": "PHYSICAL_GOODS",
-                                                        "image_url": "https://example.com/static/images/items/1/kona_coffee_beans.jpg",
-                                                        "url": "https://example.com/items/1/kona_coffee_beans",
-                                                    }
-                                                ],
-                                                "shipping": {
-                                                    "type": "SHIPPING",
-                                                    "name": {
-                                                        "full_name": "Steve Mobbs"
-                                                    },
-                                                    "address": {
-                                                        "address_line_1": "585 Moreno Ave",
-                                                        "admin_area_2": "Los Angeles",
-                                                        "admin_area_1": "CA", //must be sent in 2-letter format
-                                                        "postal_code": "90049",
-                                                        "country_code": "US"
-                                                    },
-                                                    "phone_number": {
-                                                        "country_code": "1",
-                                                        "national_number": "5555555555"
-                                                    }
                                                 }
-                                            }
-                                        ]
-                                    }
-                                        */
+                                            ]
+                                        }
+                                            */
 
-                                    if (await id) {
-                                        singleUseToken = id;
-                                        setSingleUseToken(singleUseToken);
+                                        if (await id) {
+                                            singleUseToken = id;
+                                            setSingleUseToken(singleUseToken);
 
 
-                                        /*  
-                                        
-                                        const res = await fetch('api/order', {
-                                              'method': 'POST',
-                                              'body': JSON.stringify(payload)
-                                          })
-  
-                                          if (res.status === 200) {
-                                          
-                                              const billing_address = await res.json();
-                                              console.log('THE ID IS ' + JSON.stringify(billing_address.payment_source.card.bin_details))
+                                            /*  
+                                            
+                                            const res = await fetch('api/order', {
+                                                  'method': 'POST',
+                                                  'body': JSON.stringify(payload)
+                                              })
+      
+                                              if (res.status === 200) {
                                               
-                                              redirect('/success')
-                                          }
-  
-  
-                                          return NextResponse.json(res);
-  
-                                          */
+                                                  const billing_address = await res.json();
+                                                  console.log('THE ID IS ' + JSON.stringify(billing_address.payment_source.card.bin_details))
+                                                  
+                                                  redirect('/success')
+                                              }
+      
+      
+                                              return NextResponse.json(res);
+      
+                                              */
 
+                                        }
+                                        else (console.log('no ID found'))
+                                            ;
                                     }
-                                    else (console.log('no ID found'))
-                                        ;
                                 }
                             }
                         }
@@ -453,7 +461,7 @@ export default function FastLane() {
                     <div
                         className="column"
                     >
-                        <button className="button is-link" onClick={() => window.lookupEmailProfile(email, billing)}>check mail</button>
+                        <button className="button is-link" onClick={() => callEmailLookUp(email, billing)}>check mail</button>
                     </div>
                 </div>
                 <div className='columns'>
@@ -481,7 +489,7 @@ export default function FastLane() {
                                             className="input"
                                             type="text"
                                             name="addressLine1"
-                                            value={billing.addressLine1}
+                                            value={street}
                                             readOnly
                                         />
                                     </div>
@@ -509,7 +517,7 @@ export default function FastLane() {
                                             className="input"
                                             type="text"
                                             name="adminArea1"
-                                            value={billing.adminArea1}
+                                            value={state}
                                             readOnly
                                         />
                                     </div>
@@ -522,7 +530,7 @@ export default function FastLane() {
                                             className="input"
                                             type="text"
                                             name="adminArea2"
-                                            value={billing.adminArea2}
+                                            value={area}
                                             readOnly
                                         />
                                     </div>
@@ -535,7 +543,7 @@ export default function FastLane() {
                                             className="input"
                                             type="text"
                                             name="countryCode"
-                                            value={billing.countryCode}
+                                            value={countryCode}
                                             readOnly
                                         />
                                     </div>
@@ -548,7 +556,7 @@ export default function FastLane() {
                                             className="input"
                                             type="text"
                                             name="postalCode"
-                                            value={billing.postalCode}
+                                            value={postalCode}
                                             readOnly
                                         />
                                     </div>
