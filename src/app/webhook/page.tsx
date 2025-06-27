@@ -38,6 +38,6 @@ export default function Webhooks() {
     if (error) return 'An error has occurred: ' + error.message
 
     return (
-        <h1>{data}</h1>
+        <h1>{data.g}</h1>
     )
 }

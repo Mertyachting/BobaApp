@@ -17,6 +17,10 @@ export function encodeAuthorization() {
     return btoa(`${process.env.NEXT_PUBLIC_CLIENT_ID}:${process.env.SECRET_KEY}`);
 }
 
+export function encodeAuthorizationUK() {
+    return btoa(`${process.env.NEXT_PUBLIC_CLIENT_ID_UK}:${process.env.SECRET_KEY_UK}`);
+}
+
 export async function getSDKToken() {
     const res = await sdkTokenAPI();
     const data = await res.json()

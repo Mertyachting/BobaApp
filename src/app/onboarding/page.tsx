@@ -175,7 +175,14 @@ export default function Onboarding() {
                     <div className="columns">
                         <div className="column">
 
-                            <button className="button is-success" onClick={() => setPayLater(false)} disabled={!payLater}>
+                            <button className={payLater ? "button is-success" : "button is-warning"} onClick={() => {
+                                if (payLater) {
+                                    setPayLater(false)
+                                } else {
+                                    setPayLater(true)
+                                }
+                            }
+                            }>
                                 PayLater
                             </button>
                         </div>

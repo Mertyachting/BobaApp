@@ -9,7 +9,9 @@ import { Metadata } from 'next';
 import Providers from './providers';
 
 
+
 const email = 'sb-89a43m40169106@business.example.com'
+
 
 
 export const metadata: Metadata = {
@@ -60,10 +62,12 @@ export default function RootLayout({
             </div>
           </div>
         </nav>
-        <Providers>
-          {children}
-        </Providers>
 
+        <Providers>
+
+          {children}
+
+        </Providers>
 
       </body>
     </html >

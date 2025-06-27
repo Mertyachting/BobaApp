@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useEffect } from "react";
 import MasterSword from '../../../public/images/CoffeeBeans.png'
 import Image from 'next/image';
+import Script from "next/script";
 
 export function generateUUID(): string {
     return uuidv4()
@@ -168,6 +169,12 @@ export default function AppSwitch() {
 
     return (
         <>
+            <Script id="google-pay-sdk"
+                src="https://pay.google.com/gp/p/js/pay.js"
+                //@ts-expect-error needs to load first
+                onLoad={() => { window.onGooglePayLoaded?.() }}>
+
+            </Script>
             <div className="container">
                 <div className="container">
                     <div className="column is-mobile">

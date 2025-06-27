@@ -6,8 +6,8 @@ import Script from 'next/script';
 import { useState } from 'react';
 import MasterSword from '../../../public/images/CoffeeBeans.png'
 import Image from 'next/image';
-import { useQueryClient, useQuery } from '@tanstack/react-query';
-import { Circle } from 'lucide-react';
+import { useQueryClient, useQuery, Query } from '@tanstack/react-query';
+import { Circle, PoundSterling, Euro, DollarSign } from 'lucide-react';
 
 
 
@@ -15,12 +15,12 @@ import { Circle } from 'lucide-react';
 declare global {
     interface Window {
         lookupEmailProfile: (email: string) => void;
-        submitButton: () => Promise<void>;
+        submitButton: (threeDFlow: boolean, threeDsAmount: string, threeDsCurrency: string) => Promise<Query>;
     }
 }
 
 
-interface BillingAddo {
+interface Address {
     addressLine1: string,
     addressLine2: string,
     adminArea1: string,
@@ -41,15 +41,48 @@ interface Phone {
 export default function FastLane() {
     const [email, setEmail] = useState('kite@lute.biz');
     const [payDisable, setPayDisable] = useState(true);
-    const [billing, setBilling] = useState<BillingAddo | null>(null);
+    const [billing, setBilling] = useState<Address | null>(null);
+
     const [singleUseToken, setSingleUseToken] = useState<string | null>(null);
+
+    const [threeDsToken, setThreeDsToken] = useState<string | null>(null);
     const [street, setStreet] = useState('');
     const [state, setState] = useState('');
     const [area, setArea] = useState('');
     const [countryCode, setCountryCode] = useState('');
     const [postalCode, setPostalCode] = useState('');
 
+    const [threeDsecure, setThreeDSecure] = useState('three-domain-secure')
+    const [threeDFlow, setThreeDFlow] = useState(false)
 
+    const [shippingAddress, setShippingAddress] = useState<Address | null>(null);
+
+    const [amount, setamount] = useState<string>('309.99')
+    const [currency, setCurrency] = useState<string>('USD')
+
+    const [threeDsAmount, setThreeDsAmount] = useState<string>('309.99')
+    const [threeDsCurrency, setThreeDsCurrency] = useState<string>('USD')
+
+    const threeDomainSecureParameters = {
+        amount: threeDsAmount,
+        currency: threeDsCurrency,
+        nonce: singleUseToken,
+        threeDSRequested: false,
+        // This field indicates merchant would like ton enforce 3DS even if it is not mandated
+    };
+
+
+    function currencySymbolizer() {
+        if (currency === "USD") {
+            return <DollarSign size={20} />
+        }
+        if (currency === "GBP") {
+            return <PoundSterling size={20} />
+        }
+        if (currency === "EUR") {
+            return <Euro size={20} />
+        }
+    }
 
     const queryClient = useQueryClient()
 
@@ -75,7 +108,7 @@ export default function FastLane() {
         "intent": "CAPTURE",
         "payment_source": {
             "card": {
-                "single_use_token": singleUseToken,
+                "single_use_token": threeDFlow ? threeDsToken : singleUseToken,
                 "experience_context": {
                     "return_url": "http://192.168.178.34:3000/success"
                 },
@@ -84,15 +117,15 @@ export default function FastLane() {
         "purchase_units": [
             {
                 "amount": {
-                    "currency_code": "USD",
-                    "value": "309.99",
+                    "currency_code": "GBP",
+                    "value": amount,
                     "breakdown": {
                         "item_total": {
-                            "currency_code": "USD",
+                            "currency_code": "GBP",
                             "value": "299.99"
                         },
                         "shipping": {
-                            "currency_code": "USD",
+                            "currency_code": "GBP",
                             "value": "10.00"
                         }
                     }
@@ -103,7 +136,7 @@ export default function FastLane() {
                         "description": "PayPal Special branded Coffee",
                         "sku": "sku01",
                         "unit_amount": {
-                            "currency_code": "USD",
+                            "currency_code": "GBP",
                             "value": "299.99"
                         },
                         "quantity": "1",
@@ -118,11 +151,11 @@ export default function FastLane() {
                         "full_name": "Steve Mobbs"
                     },
                     "address": {
-                        "address_line_1": "585 Moreno Ave",
-                        "admin_area_2": "Los Angeles",
-                        "admin_area_1": "CA", //must be sent in 2-letter format
-                        "postal_code": "90049",
-                        "country_code": "US"
+                        "address_line_1": shippingAddress?.addressLine1,
+                        "admin_area_2": shippingAddress?.adminArea2,
+                        "admin_area_1": shippingAddress?.adminArea1, //must be sent in 2-letter format
+                        "postal_code": shippingAddress?.postalCode,
+                        "country_code": shippingAddress?.countryCode
                     },
                     "phone_number": {
                         "country_code": "1",
@@ -134,8 +167,8 @@ export default function FastLane() {
     }
 
 
-    function callSubmitButton() {
-        window.submitButton();
+    function callSubmitButton(threeDFlow: boolean, threeDsAmount: string, threeDsCurrency: string) {
+        window.submitButton(threeDFlow, threeDsAmount, threeDsCurrency);
     };
 
     function callEmailLookUp(email: string) {
@@ -164,13 +197,14 @@ export default function FastLane() {
             'body': JSON.stringify(payload)
         })
         const data = res.json();
+        console.log('PAYMENT TRIGGERED')
         return data;
     }
 
     const orders = useQuery({
-        queryKey: ['order', singleUseToken],
+        queryKey: ['order', threeDsToken, singleUseToken],
         queryFn: payment,
-        enabled: !!singleUseToken
+        enabled: threeDFlow ? !!threeDsToken : !!singleUseToken
     })
 
     const fetchToken = async () => {
@@ -221,7 +255,7 @@ export default function FastLane() {
 
 
 
-            {sdkTokens.isPending ? (
+            {/*             {sdkTokens.isPending ? (
                 <>
                     <div className="container">
                         <div className="notification is-primary loading-animation">
@@ -232,8 +266,11 @@ export default function FastLane() {
             ) :
                 <>
                     <Script
-                        src="https://www.paypal.com/sdk/js?client-id=ASYzXjYB-I1obLcTb3uBd-VJnP1eCrJgykR30_RUpOFsUXQEwHYsooIERfuWCfwDXL9BdH94uwGJi5zQ&merchant-id=DVJBG3EJV2YMJ&buyer-country=US&currency=USD&components=buttons,fastlane"
+                        src={`https://www.paypal.com/sdk/js?client-id=ASYzXjYB-I1obLcTb3uBd-VJnP1eCrJgykR30_RUpOFsUXQEwHYsooIERfuWCfwDXL9BdH94uwGJi5zQ&merchant-id=DVJBG3EJV2YMJ&buyer-country=US&currency=USD&components=buttons,fastlane,${threeDsecure}`
+                            //`https://www.paypal.com/sdk/js?client-id=AZ73zbPwKdTxYLwvLKZYHH--AmaGEuAylnT8IbdyoeRC2VlUP_vM4TUzrVesJS2y4FL2FBkwqPaqlSCa&buyer-country=GB&currency=GBP&components=buttons,fastlane,${threeDsecure}`
+                        }
                         strategy="lazyOnload"
+                        data-client-metadata-id="as-cimd-24JUN25-0101"
                         data-sdk-client-token={queryClient.getQueryData(['sdkToken'])}
                         onLoad={
                             async () => {
@@ -249,7 +286,9 @@ export default function FastLane() {
                                         styles: { root: { backgroundColor: '#faf8f5' } }
                                     }));
 
-                                console.log('here 1')
+                                console.log('fastlane loaded')
+
+                                let threeDomainSecureComponent;
 
                                 paymentComponent = await FastlanePaymentComponent();
 
@@ -292,6 +331,16 @@ export default function FastLane() {
                                         } = await identity.triggerAuthenticationFlow(customerContextId);
 
                                         if (profileData) {
+
+                                            console.log("profileData is " + JSON.stringify(profileData))
+
+                                            const shipping_address = profileData.shippingAddress.address
+                                            if (shipping_address) {
+                                                setShippingAddress(shipping_address)
+                                            }
+
+
+
                                             const billing_address = profileData.card.paymentSource.card.billingAddress
 
                                             setBilling(billing_address)
@@ -315,11 +364,11 @@ export default function FastLane() {
                                             // profileData contains their profile details 
 
                                             renderFastlaneMemberExperience = true;
-                                            /*
+                                            
                                                                         const name = profileData.name;
                                                                         const shippingAddress = profileData.shippingAddress;
                                                                         const card = profileData.card;
-                                                                        */
+                                                                
 
                                             console.log(authenticationState)
                                             //billing_address = setBilling_address(profileData.card);
@@ -337,7 +386,8 @@ export default function FastLane() {
                                         await fastlanePaymentComponent.render("#payment-container");
                                     }
 
-                                    window.submitButton = async function () {
+                                    //@ts-expect-error can happen what ever
+                                    window.submitButton = async function (threeDFlow: boolean, threeDsAmount: string, threeDsCurrency: string) {
                                         //@ts-expect-error its hard coded
                                         const fastlanePaymentComponent = await paymentComponent;
 
@@ -346,114 +396,157 @@ export default function FastLane() {
                                         const { id } = await fastlanePaymentComponent.getPaymentToken();
                                         console.log('THE ID IS ' + id)
 
-                                        /*
+                                        
                                         const payload = {
-                                            "intent": "CAPTURE",
-                                            "payment_source": {
-                                                "card": {
-                                                    "single_use_token": id,
-                                                    "experience_context": {
-                                                        "return_url": "http://192.168.178.34:3000/success"
+                        "intent": "CAPTURE",
+                    "payment_source": {
+                        "card": {
+                        "single_use_token": id,
+                    "experience_context": {
+                        "return_url": "http://192.168.178.34:3000/success"
                                                     }
                                                 }
                                             },
-                                            "purchase_units": [
-                                                {
-                                                    "amount": {
-                                                        "currency_code": "USD",
-                                                        "value": "309.99",
-                                                        "breakdown": {
-                                                            "item_total": {
-                                                                "currency_code": "USD",
-                                                                "value": "299.99"
+                    "purchase_units": [
+                    {
+                        "amount": {
+                        "currency_code": "USD",
+                    "value": "309.99",
+                    "breakdown": {
+                        "item_total": {
+                        "currency_code": "USD",
+                    "value": "299.99"
                                                             },
-                                                            "shipping": {
-                                                                "currency_code": "USD",
-                                                                "value": "10.00"
+                    "shipping": {
+                        "currency_code": "USD",
+                    "value": "10.00"
                                                             }
                                                         }
                                                     },
-                                                    "items": [
-                                                        {
-                                                            "name": "Beyond Coffee",
-                                                            "description": "PayPal Special branded Coffee",
-                                                            "sku": "sku01",
-                                                            "unit_amount": {
-                                                                "currency_code": "USD",
-                                                                "value": "299.99"
+                    "items": [
+                    {
+                        "name": "Beyond Coffee",
+                    "description": "PayPal Special branded Coffee",
+                    "sku": "sku01",
+                    "unit_amount": {
+                        "currency_code": "USD",
+                    "value": "299.99"
                                                             },
-                                                            "quantity": "1",
-                                                            "category": "PHYSICAL_GOODS",
-                                                            "image_url": "https://example.com/static/images/items/1/kona_coffee_beans.jpg",
-                                                            "url": "https://example.com/items/1/kona_coffee_beans",
+                    "quantity": "1",
+                    "category": "PHYSICAL_GOODS",
+                    "image_url": "https://example.com/static/images/items/1/kona_coffee_beans.jpg",
+                    "url": "https://example.com/items/1/kona_coffee_beans",
                                                         }
-                                                    ],
-                                                    "shipping": {
-                                                        "type": "SHIPPING",
-                                                        "name": {
-                                                            "full_name": "Steve Mobbs"
+                    ],
+                    "shipping": {
+                        "type": "SHIPPING",
+                    "name": {
+                        "full_name": "Steve Mobbs"
                                                         },
-                                                        "address": {
-                                                            "address_line_1": "585 Moreno Ave",
-                                                            "admin_area_2": "Los Angeles",
-                                                            "admin_area_1": "CA", //must be sent in 2-letter format
-                                                            "postal_code": "90049",
-                                                            "country_code": "US"
+                    "address": {
+                        "address_line_1": "585 Moreno Ave",
+                    "admin_area_2": "Los Angeles",
+                    "admin_area_1": "CA", //must be sent in 2-letter format
+                    "postal_code": "90049",
+                    "country_code": "US"
                                                         },
-                                                        "phone_number": {
-                                                            "country_code": "1",
-                                                            "national_number": "5555555555"
+                    "phone_number": {
+                        "country_code": "1",
+                    "national_number": "5555555555"
                                                         }
                                                     }
                                                 }
-                                            ]
+                    ]
                                         }
-                                            */
-
+                    
                                         if (await id) {
                                             const singleUseToken = id;
                                             setSingleUseToken(singleUseToken);
+                                            // Generate SCA eligbility parameters
+
+                                            threeDomainSecureParameters.nonce = singleUseToken;
+                                            threeDomainSecureParameters.amount = threeDsAmount;
+                                            threeDomainSecureParameters.currency = threeDsCurrency;
+
+                                            console.log('I am the 3DS parameters' + threeDomainSecureParameters)
 
 
-                                            /*  
-                                            
+
+                                            if (window.paypal) {
+                                                console.log('3ds flow active')
+
+                                                //@ts-expect-error its loaded from the script not from the react library
+                                                threeDomainSecureComponent = window.paypal.ThreeDomainSecureClient;
+                                                const isThreeDomainSecureEligible = await threeDomainSecureComponent.isEligible(
+                                                    threeDomainSecureParameters,
+                                                );
+                                                console.log('3DS eligble?: ' + isThreeDomainSecureEligible)
+                                                if (isThreeDomainSecureEligible) {
+                                                    const { authenticationState, liabilityShift, nonce } = await threeDomainSecureComponent?.show();
+
+                                                    if (authenticationState === "succeeded") {
+                                                        console.log("merchant auth: " + liabilityShift + " " + authenticationState + " " + nonce);
+                                                        setThreeDsToken(nonce)
+                                                        console.log("THREE DS NONCE " + threeDsToken)
+                                                        // Check the liability shift and decide on continuing the transaction
+                                                        return orders;
+                                                    }
+
+                                                } else {
+                                                    return orders;
+                                                }
+                                            } else {
+                                                console.log('PAYPAL JSSDK NOT LOADED')
+                                                // Cancelled or errored, merchant can choose to send the customer back to 3D Secure or submit a payment and or vault the payment token.
+                                            }
+
+
+                                            /*
+
                                             const res = await fetch('api/order', {
-                                                  'method': 'POST',
-                                                  'body': JSON.stringify(payload)
+                        'method': 'POST',
+                    'body': JSON.stringify(payload)
                                               })
-      
-                                              if (res.status === 200) {
+
+                    if (res.status === 200) {
                                               
                                                   const billing_address = await res.json();
-                                                  console.log('THE ID IS ' + JSON.stringify(billing_address.payment_source.card.bin_details))
-                                                  
-                                                  redirect('/success')
+                    console.log('THE ID IS ' + JSON.stringify(billing_address.payment_source.card.bin_details))
+
+                    redirect('/success')
                                               }
-      
-      
-                                              return NextResponse.json(res);
-      
-                                              */
+
+
+                    return NextResponse.json(res);
+
+                    
 
                                         }
                                         else (console.log('no ID found'))
                                             ;
                                     }
                                 }
+
+
                             }
                         }
                         onError={(e) => {
                             console.error('Script failed to load', e)
-                        }}
+                        }
+
+                        }
                     />
                     <link rel="preload" href="https://www.paypalobjects.com/fastlane-v1/assets/fastlane-with-tooltip_en_sm_light.0808.svg" as="image" type="image/avif" />
                     <link rel="preload" href="https://www.paypalobjects.com/fastlane-v1/assets/fastlane_en_sm_light" />
                 </>
-            }
+            } */}
+
+
             <div
                 className="container is mobile"
             >
                 <h1 className='title is-1 pt-6 pb-3'>FastLane Checkout Experience</h1>
+
                 <div className="columns is-gapless mt-5 mb-0">
                     <div
                         className="column is-2"
@@ -461,11 +554,17 @@ export default function FastLane() {
                         <input className="input" type="email" placeholder={email} value={email} onChange={(e) => setEmail(e.target.value)} />
                     </div>
                     <div
-                        className="column"
+                        className="column is-2"
                     >
                         <button className="button is-link" onClick={() => callEmailLookUp(email)}>check mail</button>
                     </div>
+                    <div
+                        className="column"
+                    >
+                        <button className={threeDFlow ? 'button is-success is-active' : 'button is-warning'} onClick={() => { if (!threeDFlow) { setThreeDFlow(true) } else { setThreeDFlow(false) } }}>Activate 3DS</button>
+                    </div>
                 </div>
+
                 <div className='columns'>
                     <div className="column is-offset-2" id="watermark-container">
                     </div>
@@ -477,101 +576,202 @@ export default function FastLane() {
                     <div className='column is-half'>
                         <div className='column is narrow' id="payment-container">
                         </div>
-                        <div className="box">
-                            <h1 className="title is-4">Billing Address</h1>
-                        </div>
-                        {billing ?
-                            <>
+                        <div className='box'>
+                            <h1 className="title is-4">Shipping Address</h1>
+
+                            {shippingAddress ?
+                                <>
 
 
-                                <div className="field">
-                                    <label className="label">Street</label>
-                                    <div className="control">
-                                        <input
-                                            className="input"
-                                            type="text"
-                                            name="addressLine1"
-                                            value={street}
-                                            readOnly
-                                        />
-                                    </div>
-                                </div>
-
-                                {billing.addressLine2 && (
                                     <div className="field">
-                                        <label className="label">Street (Line 2)</label>
+                                        <label className="label">Street</label>
                                         <div className="control">
                                             <input
                                                 className="input"
                                                 type="text"
-                                                name="addressLine2"
-                                                value={billing?.addressLine2}
+                                                name="addressLine1"
+                                                value={shippingAddress.addressLine1}
                                                 readOnly
                                             />
                                         </div>
                                     </div>
-                                )}
 
-                                <div className="field">
-                                    <label className="label">State</label>
-                                    <div className="control">
-                                        <input
-                                            className="input"
-                                            type="text"
-                                            name="adminArea1"
-                                            value={state}
-                                            readOnly
-                                        />
+                                    {shippingAddress.addressLine2 && (
+                                        <div className="field">
+                                            <label className="label">Street (Line 2)</label>
+                                            <div className="control">
+                                                <input
+                                                    className="input"
+                                                    type="text"
+                                                    name="addressLine2"
+                                                    value={shippingAddress?.addressLine2}
+                                                    readOnly
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="field">
+                                        <label className="label">State</label>
+                                        <div className="control">
+                                            <input
+                                                className="input"
+                                                type="text"
+                                                name="adminArea1"
+                                                value={shippingAddress.adminArea1}
+                                                readOnly
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="field">
-                                    <label className="label">Area</label>
-                                    <div className="control">
-                                        <input
-                                            className="input"
-                                            type="text"
-                                            name="adminArea2"
-                                            value={area}
-                                            readOnly
-                                        />
+                                    <div className="field">
+                                        <label className="label">Area</label>
+                                        <div className="control">
+                                            <input
+                                                className="input"
+                                                type="text"
+                                                name="adminArea2"
+                                                value={shippingAddress.adminArea2}
+                                                readOnly
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="field">
-                                    <label className="label">Country Code</label>
-                                    <div className="control">
-                                        <input
-                                            className="input"
-                                            type="text"
-                                            name="countryCode"
-                                            value={countryCode}
-                                            readOnly
-                                        />
+                                    <div className="field">
+                                        <label className="label">Country Code</label>
+                                        <div className="control">
+                                            <input
+                                                className="input"
+                                                type="text"
+                                                name="countryCode"
+                                                value={shippingAddress.countryCode}
+                                                readOnly
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="field">
-                                    <label className="label">Postal Code</label>
-                                    <div className="control">
-                                        <input
-                                            className="input"
-                                            type="text"
-                                            name="postalCode"
-                                            value={postalCode}
-                                            readOnly
-                                        />
+                                    <div className="field">
+                                        <label className="label">Postal Code</label>
+                                        <div className="control">
+                                            <input
+                                                className="input"
+                                                type="text"
+                                                name="postalCode"
+                                                value={shippingAddress.postalCode}
+                                                readOnly
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
-                            </>
+                                </>
 
-                            :
+                                :
 
-                            <>
+                                <>
 
-                            </>
-                        }
+                                </>
+                            }
+                        </div>
+
+                        <div className="box">
+                            <h1 className="title is-4">Billing Address</h1>
+
+
+
+
+                            {billing ?
+                                <>
+
+
+                                    <div className="field">
+                                        <label className="label">Street</label>
+                                        <div className="control">
+                                            <input
+                                                className="input"
+                                                type="text"
+                                                name="addressLine1"
+                                                value={street}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {billing.addressLine2 && (
+                                        <div className="field">
+                                            <label className="label">Street (Line 2)</label>
+                                            <div className="control">
+                                                <input
+                                                    className="input"
+                                                    type="text"
+                                                    name="addressLine2"
+                                                    value={billing?.addressLine2}
+                                                    readOnly
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="field">
+                                        <label className="label">State</label>
+                                        <div className="control">
+                                            <input
+                                                className="input"
+                                                type="text"
+                                                name="adminArea1"
+                                                value={state}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="field">
+                                        <label className="label">Area</label>
+                                        <div className="control">
+                                            <input
+                                                className="input"
+                                                type="text"
+                                                name="adminArea2"
+                                                value={area}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="field">
+                                        <label className="label">Country Code</label>
+                                        <div className="control">
+                                            <input
+                                                className="input"
+                                                type="text"
+                                                name="countryCode"
+                                                value={countryCode}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="field">
+                                        <label className="label">Postal Code</label>
+                                        <div className="control">
+                                            <input
+                                                className="input"
+                                                type="text"
+                                                name="postalCode"
+                                                value={postalCode}
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+
+                                </>
+
+                                :
+
+                                <>
+
+                                </>
+                            }
+                        </div>
 
                     </div>
                     <div className="column is-half">
@@ -584,14 +784,59 @@ export default function FastLane() {
                                 </div>
                                 <div className="media-content">
                                     <div className="content">
-                                        <h3 className='title is-3'>Order Summary</h3>
-                                        <p>
-                                            <strong>Beyond Coffee</strong>
-                                            <br />
-                                            <strong>1 item</strong>
-                                            <br />
-                                            <strong>$299.99</strong>
-                                        </p>
+                                        <div className="columns is-gapless">
+                                            <div className="column">
+                                                <h3 className='title is-3'>Order Summary</h3>
+
+
+                                                <div className="columns">
+                                                    <div className="column">
+                                                        <strong>Beyond Coffee</strong>
+                                                    </div>
+
+                                                </div>
+
+                                                <div className="columns">
+                                                    <div className="column">
+                                                        <strong>1 item</strong>
+                                                    </div>
+                                                </div>
+
+                                                <div className="columns">
+                                                    <div className="column is-4">
+                                                        <div className="control has-icons-left has-icons-right">
+                                                            <input type="input" className="input has-icons-left" placeholder={amount} value={`${amount}`} onChange={(e) => setamount(e.target.value)} />
+                                                            {currency === 'USD' ?
+                                                                <span className="icon is-small is-left">
+                                                                    <i>{currencySymbolizer()}</i>
+                                                                </span> :
+                                                                <span className="icon is-small is-right">
+                                                                    <i>{currencySymbolizer()}</i>
+                                                                </span>
+                                                            }
+
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="column">
+                                                        <div className="select is-primary">
+                                                            <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
+                                                                <option>Currency</option>
+                                                                <option value={"USD"}>USD</option>
+                                                                <option value={"GBP"}>GBP</option>
+                                                                <option value={"EUR"}>EUR</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+
+
+
+                                        </div>
+
                                     </div>
                                     <nav className="level is-mobile">
                                         <div className="level-left">
@@ -615,8 +860,49 @@ export default function FastLane() {
                                 </div>
                             </article>
                         </div>
-                        <button className="button is-link is-large is-fullwidth" id="submit-button" onClick={() => callSubmitButton()} disabled={payDisable}>Pay</button>
+
+                        <div className="box">
+                            <div className="columns">
+                                <div className="column">
+                                    <h1 className='title is-4'>3DS Settings</h1>
+
+                                    <div className="columns">
+                                        <div className="column is-4">
+                                            <div className="control has-icons-left has-icons-right">
+                                                <input type="input" className="input has-icons-left" placeholder={threeDsAmount} value={`${threeDsAmount}`} onChange={(e) => setThreeDsAmount(e.target.value)} />
+                                                {currency === 'USD' ?
+                                                    <span className="icon is-small is-left">
+                                                        <i>{currencySymbolizer()}</i>
+                                                    </span> :
+                                                    <span className="icon is-small is-right">
+                                                        <i>{currencySymbolizer()}</i>
+                                                    </span>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <div className="column">
+                                            <div className="select is-primary">
+                                                <select value={threeDsCurrency} onChange={(e) => setThreeDsCurrency(e.target.value)}>
+                                                    <option>Currency</option>
+                                                    <option value={"USD"}>USD</option>
+                                                    <option value={"GBP"}>GBP</option>
+                                                    <option value={"EUR"}>EUR</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+
+                            </div>
+                        </div>
+                        <button className="button is-link is-large is-fullwidth" id="submit-button" onClick={() => callSubmitButton(threeDFlow, threeDsAmount, threeDsCurrency)} disabled={payDisable}>Pay</button>
                     </div>
+
+
 
                 </div>
             </div >
@@ -628,11 +914,14 @@ export default function FastLane() {
                         <div className="notification is-primary">
                             <div className="title">
                                 <h1 className="title is-4">Single Use Token: {singleUseToken}</h1>
+                                {threeDFlow ?
+                                    <h1 className="title is-4">3DS Use Token: {threeDsToken}</h1>
+                                    :
+                                    <></>
+                                }
                             </div>
                             <div className='content'>
-                                <p className='has-text-weight-bold'>
-                                    {JSON.stringify(orders.data, null, '\t')}
-                                </p>
+                                <pre>{JSON.stringify(orders.data, null, 2)}</pre>
                             </div>
                         </div>
                     </div>

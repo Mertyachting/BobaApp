@@ -1,12 +1,19 @@
 'use client'
-import { PayPalScriptProvider } from '@paypal/react-paypal-js';
-import AppSwitch from '../components/appswitch';
+
+import { PayPalScriptProvider } from "@paypal/react-paypal-js"
+
+
 
 const client_id = process.env.NEXT_PUBLIC_CLIENT_ID ? process.env.NEXT_PUBLIC_CLIENT_ID : 'test';
 const merchant_id = process.env.NEXT_PUBLIC_MERCHANT_ID ? process.env.NEXT_PUBLIC_MERCHANT_ID : 'test';
 
 
-export default function Checkout() {
+
+export default function PayPalProvider({
+    children,
+}: {
+    children: React.ReactNode
+}) {
     const initialOptions = {
         clientId: client_id,
         currency: "USD",
@@ -18,13 +25,5 @@ export default function Checkout() {
         'enable-funding': 'venmo',
     };
 
-
-
-    return (
-        <>
-            <PayPalScriptProvider options={initialOptions}>
-                <AppSwitch />
-            </PayPalScriptProvider>
-        </>
-    )
+    return <PayPalScriptProvider options={initialOptions}>{children}</PayPalScriptProvider>
 }
