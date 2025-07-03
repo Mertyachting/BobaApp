@@ -346,94 +346,9 @@ export default function FastLane() {
                                         const { id } = await fastlanePaymentComponent.getPaymentToken();
                                         console.log('THE ID IS ' + id)
 
-                                        /*
-                                        const payload = {
-                                            "intent": "CAPTURE",
-                                            "payment_source": {
-                                                "card": {
-                                                    "single_use_token": id,
-                                                    "experience_context": {
-                                                        "return_url": "http://192.168.178.34:3000/success"
-                                                    }
-                                                }
-                                            },
-                                            "purchase_units": [
-                                                {
-                                                    "amount": {
-                                                        "currency_code": "USD",
-                                                        "value": "309.99",
-                                                        "breakdown": {
-                                                            "item_total": {
-                                                                "currency_code": "USD",
-                                                                "value": "299.99"
-                                                            },
-                                                            "shipping": {
-                                                                "currency_code": "USD",
-                                                                "value": "10.00"
-                                                            }
-                                                        }
-                                                    },
-                                                    "items": [
-                                                        {
-                                                            "name": "Beyond Coffee",
-                                                            "description": "PayPal Special branded Coffee",
-                                                            "sku": "sku01",
-                                                            "unit_amount": {
-                                                                "currency_code": "USD",
-                                                                "value": "299.99"
-                                                            },
-                                                            "quantity": "1",
-                                                            "category": "PHYSICAL_GOODS",
-                                                            "image_url": "https://example.com/static/images/items/1/kona_coffee_beans.jpg",
-                                                            "url": "https://example.com/items/1/kona_coffee_beans",
-                                                        }
-                                                    ],
-                                                    "shipping": {
-                                                        "type": "SHIPPING",
-                                                        "name": {
-                                                            "full_name": "Steve Mobbs"
-                                                        },
-                                                        "address": {
-                                                            "address_line_1": "585 Moreno Ave",
-                                                            "admin_area_2": "Los Angeles",
-                                                            "admin_area_1": "CA", //must be sent in 2-letter format
-                                                            "postal_code": "90049",
-                                                            "country_code": "US"
-                                                        },
-                                                        "phone_number": {
-                                                            "country_code": "1",
-                                                            "national_number": "5555555555"
-                                                        }
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                            */
-
                                         if (await id) {
                                             const singleUseToken = id;
                                             setSingleUseToken(singleUseToken);
-
-
-                                            /*  
-                                            
-                                            const res = await fetch('api/order', {
-                                                  'method': 'POST',
-                                                  'body': JSON.stringify(payload)
-                                              })
-      
-                                              if (res.status === 200) {
-                                              
-                                                  const billing_address = await res.json();
-                                                  console.log('THE ID IS ' + JSON.stringify(billing_address.payment_source.card.bin_details))
-                                                  
-                                                  redirect('/success')
-                                              }
-      
-      
-                                              return NextResponse.json(res);
-      
-                                              */
 
                                         }
                                         else (console.log('no ID found'))
