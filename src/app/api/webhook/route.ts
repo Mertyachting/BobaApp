@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         // webhooks.unshift({ id: Date.now(), ...body }); // Add new webhook at the beginning
         console.log('Webhook received:', body);
-        return NextResponse.json({ message: 'Received' }, { status: 200 });
+        return NextResponse.json({ body }, { status: 200 });
     } catch (error) {
         console.error('Webhook error:', error);
         return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
