@@ -85,16 +85,23 @@ export default function Onboarding() {
         ],
         "products": [
             "PPCP",
-            "ADVANCED_VAULTING"
+            "ADVANCED_VAULTING",
+            "PAYMENT_METHODS"
         ],
         "capabilities": [
-            "PAYPAL_WALLET_VAULTING_ADVANCED"
+            "PAYPAL_WALLET_VAULTING_ADVANCED",
+            "GOOGLE_PAY"
         ],
-        "tracking_id": email
+        "tracking_id": email,
+        "partner_config_override": {
+            "return_url": "http://192.168.178.34:3000/success",
+            "return_url_description": "onboarding page"
+        }
 
     }
 
-    const bodyFirstParty = {
+    const bodyFirstParty =
+    {
         "email": email,
         "business_entity": {
             "addresses": [
@@ -123,7 +130,7 @@ export default function Onboarding() {
                                 "REFUND",
                                 "ACCESS_MERCHANT_INFORMATION",
                                 "VAULT",
-                                "BILLING_AGREEMENT"
+                                "BILLING_AGREEMENT",
                             ],
                             "seller_nonce": 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
                         }
@@ -134,10 +141,12 @@ export default function Onboarding() {
         ],
         "products": [
             "PPCP",
-            "ADVANCED_VAULTING"
+            "ADVANCED_VAULTING",
+            "PAYMENT_METHODS"
         ],
         "capabilities": [
-            "PAYPAL_WALLET_VAULTING_ADVANCED"
+            "PAYPAL_WALLET_VAULTING_ADVANCED",
+            "GOOGLE_PAY"
         ],
         "tracking_id": email,
         "partner_config_override": {

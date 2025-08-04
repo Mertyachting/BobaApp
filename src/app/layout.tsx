@@ -50,6 +50,10 @@ export default function RootLayout({
               </Link>
               <Link className="navbar-item" href='/checkout'>
                 AppSwitch
+              </Link >
+
+              <Link className="navbar-item" href='/braintree'>
+                FastLane with Braintree
               </Link>
             </div>
           </div>

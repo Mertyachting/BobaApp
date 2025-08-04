@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { useEffect } from "react";
 import MasterSword from '../../../public/images/CoffeeBeans.png'
 import Image from 'next/image';
+import Script from "next/script";
 
 export function generateUUID(): string {
     return uuidv4()
@@ -21,6 +22,33 @@ const merchant_id = process.env.NEXT_PUBLIC_MERCHANT_ID ? process.env.NEXT_PUBLI
 */
 
 export default function AppSwitch() {
+
+    let IsReadyToPayRequest = { allowedPaymentMethods: ['CARD', 'TOKENIZED_CARD'] }
+
+    function onGooglePayLoaded() {
+        //@ts-expect-error ...
+        const paymentsClient = new window.google.payments.api.PaymentsClient({ environment: 'TEST' });
+
+        paymentsClient.isReadyToPay(IsReadyToPayRequest).then(function (response) {
+            console.log(response.result)
+            if (response.result) {
+                addGooglePayButton();
+            }
+            //@ts-expect-error ...
+        }).catch(function (err) {
+            console.error(err);
+        });
+    }
+
+    function addGooglePayButton() {
+        console.log("G-Pay Button function initiated")
+        const paymentsClient = new window.google.payments.api.PaymentsClient({ environment: 'TEST' });
+        const button = paymentsClient.createButton({
+            onClick: console.log("CLICKER") /* To be defined later */,
+            allowedPaymentMethods: ['CARD', 'TOKENIZED_CARD']
+        });
+        document.getElementById('googlepay').appendChild(button);
+    }
 
 
 
@@ -149,13 +177,9 @@ export default function AppSwitch() {
         createOrder,
         onApprove,
 
-
-        message: {
-            // This amount is hard coded for demo purposes
-            amount: 299.99,
-            position: "top",
-            color: "white"
-
+        style: {
+            tagline: false,
+            layout: 'horizontal'
         },
 
     });
@@ -168,6 +192,12 @@ export default function AppSwitch() {
 
     return (
         <>
+            <Script
+                id="G-Pay"
+                src="https://pay.google.com/gp/p/js/pay.js"
+                onLoad={() => onGooglePayLoaded()}
+            >
+            </Script>
             <div className="container">
                 <div className="container">
                     <div className="column is-mobile">
@@ -218,12 +248,18 @@ export default function AppSwitch() {
                                             </div>
                                         </article>
                                     </div>
+
                                     {isLoaded ?
                                         <>
                                             <Buttons></Buttons>
+
+
+
                                         </>
 
                                         : null}
+
+                                    <div id="googlepay"></div>
                                 </div>
 
                             </div>
