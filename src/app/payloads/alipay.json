@@ -1,0 +1,33 @@
+{
+    "intent": "CAPTURE",
+    "payment_source": {
+        "alipay": {
+            "country_code": "CN",
+            "name": "John Doe"
+        }
+    },
+    "processing_instruction": "ORDER_COMPLETE_ON_PAYMENT_APPROVAL",
+    "purchase_units": [
+        {
+            "invoice_id": "Invoice-12345",
+            "custom_id": "Custom-1234",
+            "amount": {
+                "currency_code": "HKD",
+                "value": "49.11"
+            },
+            "shipping": {
+                "name": {
+                    "full_name": "John Doe"
+                },
+                "address": {
+                    "address_line_1": "HongKong Rd East, 126",
+                    "address_line_2": "Floor 5",
+                    "admin_area_2": "Qingdao",
+                    "admin_area_1": "rm",
+                    "postal_code": "266071",
+                    "country_code": "CN"
+                }
+            }
+        }
+    ]
+}

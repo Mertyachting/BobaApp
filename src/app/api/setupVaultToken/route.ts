@@ -1,11 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { getAccessToken } from "@/app/helpers/helpers";
+import { NextRequest, NextResponse } from "next/server";
 import { generateUUID } from "@/app/helpers/helpers";
-
-
-
-
-
 
 
 const access_token = await getAccessToken();
@@ -19,7 +14,7 @@ export async function POST(req: NextRequest) {
     // use the cart information passed from the front-end to calculate the purchase unit details
     const reqBody = await req.json();
     const base = 'https://api-m.sandbox.paypal.com'
-    const url = `${base}/v2/checkout/orders`;
+    const url = `${base}/v3/vault/setup-tokens`;
 
     try {
         const response = await fetch(url,

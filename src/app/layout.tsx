@@ -55,6 +55,10 @@ export default function RootLayout({
               <Link className="navbar-item" href='/braintree'>
                 FastLane with Braintree
               </Link>
+
+              <Link className="navbar-item" href='/jssdkv6'>
+                new JSSDK v6
+              </Link>
             </div>
           </div>
 

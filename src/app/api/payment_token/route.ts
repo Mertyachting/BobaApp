@@ -1,11 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { getAccessToken } from "@/app/helpers/helpers";
+import { NextRequest, NextResponse } from "next/server";
 import { generateUUID } from "@/app/helpers/helpers";
-
-
-
-
-
 
 
 const access_token = await getAccessToken();
@@ -19,7 +14,7 @@ export async function POST(req: NextRequest) {
     // use the cart information passed from the front-end to calculate the purchase unit details
     const reqBody = await req.json();
     const base = 'https://api-m.sandbox.paypal.com'
-    const url = `${base}/v2/checkout/orders`;
+    const url = `${base}/v3/vault/payment-tokens`;
 
     try {
         const response = await fetch(url,
@@ -35,7 +30,8 @@ export async function POST(req: NextRequest) {
                     // "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
                     "PayPal-Partner-Attribution-Id": "Xúr-PPCP",
                     "PayPal-Auth-Assertion": jwtToken,
-                    "PayPal-Request-Id": generateUUID()
+                    "PayPal-Request-Id": generateUUID(),
+                    "PayPal-Client-Metadata-Id": generateUUID()
                 },
                 method: "POST",
                 body: JSON.stringify(reqBody),

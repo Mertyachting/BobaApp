@@ -1,0 +1,76 @@
+{
+    "intent": "CAPTURE",
+    "invoice_id": "XYZ12315223",
+    "purchase_units": [
+        {
+            "reference_id": "homer",
+            "amount": {
+                "currency_code": "USD",
+                "value": "245",
+                "breakdown": {
+                    "item_total": {
+                        "currency_code": "USD",
+                        "value": "150.00"
+                    },
+                    "tax_total": {
+                        "currency_code": "USD",
+                        "value": 95.00
+                    }
+                }
+            },
+            "items": [
+                {
+                    "name": "Lost Episode of Homers Bachelor Party",
+                    "quantity": "2",
+                    "unit_amount": {
+                        "currency_code": "USD",
+                        "value": "50.00"
+                    },
+                    "sku": "1000",
+                    "tax": {
+                        "currency_code": "USD",
+                        "value": "38.00"
+                    }
+                },
+                {
+                    "name": "Special Edition Duff Whiskey",
+                    "quantity": "1",
+                    "unit_amount": {
+                        "currency_code": "USD",
+                        "value": "50.00"
+                    },
+                    "sku": "20",
+                    "tax": {
+                        "currency_code": "USD",
+                        "value": "19.00"
+                    }
+                }
+            ],
+            "shipping": {
+                "address": {
+                    "address_line_1": "Badensche Str. 24",
+                    "admin_area_1": "Berlin",
+                    "admin_area_2": "Berlin",
+                    "country_code": "DE",
+                    "postal_code": "10715"
+                },
+                "type": "SHIPPING"
+            },
+            "custom_id": "HelloHomer"
+        }
+    ],
+    "payment_source": {
+        "paypal": {
+            "experience_context": {
+                "brand_name": "EXAMPLE INC",
+                "cancel_url": "https://example.com/cancelUrl",
+                "landing_page": "LOGIN",
+                "locale": "en-US",
+                "payment_method_preference": "IMMEDIATE_PAYMENT_REQUIRED",
+                "return_url": "https://example.com/returnUrl",
+                "shipping_preference": "SET_PROVIDED_ADDRESS",
+                "user_action": "PAY_NOW"
+            }
+        }
+    }
+}
