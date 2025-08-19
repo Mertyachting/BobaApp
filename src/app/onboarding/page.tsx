@@ -90,7 +90,8 @@ export default function Onboarding() {
         ],
         "capabilities": [
             "PAYPAL_WALLET_VAULTING_ADVANCED",
-            "GOOGLE_PAY"
+            "GOOGLE_PAY",
+            "APPLE_PAY"
         ],
         "tracking_id": email,
         "partner_config_override": {
