@@ -154,9 +154,6 @@ export default function AppSwitch() {
     //@ts-expect-error...
     async function onApprove(data) {
 
-        console.log('onapprove is called.')
-
-
         await fetch(`${base}/api/capture`, {
             mode: 'same-origin',
             method: "POST",
@@ -167,9 +164,6 @@ export default function AppSwitch() {
                 orderID: data.orderID
             })
         })
-
-
-
     }
 
     const { Buttons, isLoaded, hasReturned, resume } = usePayPalButtons({

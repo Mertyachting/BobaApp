@@ -176,11 +176,19 @@ export default function Page() {
             }
             await setupApplePayButton(sdkInstance)
 
+            if (eligibleMethods.isPayLaterEligible) {
+                const paylaterPaymentMethodDetails =
+                    eligibleMethods.payLaterDetails;
+                setupPayLaterButton(sdkInstance, paylaterPaymentMethodDetails);
+            }
+
             console.log("SDK initialized successfully:", sdkInstance);
         } catch (error) {
             console.error("Error initializing PayPal checkout:", error);
         }
     };
+
+
 
     // Initialize PayPal SDK
     const initializePayPalSDK = async () => {
@@ -196,13 +204,15 @@ export default function Page() {
                 "fastlane"
             ],
             locale: "en-US",
+            testBuyerCountry: "US",
             pageType: "checkout",
-            partnerAttributionId: "Xúr_PPCP"
+            partnerAttributionId: "Xur_PPCP"
         });
     };
 
     // Check payment method eligibility
     const getEligiblePaymentMethods = async (sdkInstance) => {
+
         if (vault) {
             const paymentMethods = await sdkInstance.findEligibleMethods(
                 {
@@ -212,16 +222,21 @@ export default function Page() {
             );
             return {
                 isPayPalEligible: paymentMethods.isEligible("paypal"),
-                isVenmoEligible: paymentMethods.isEligible("venmo")
+                isPayLaterEligible: paymentMethods.isEligble("paylater"),
+                isVenmoEligible: paymentMethods.isEligible("venmo"),
+                payLaterDetails: paymentMethods.getDetails("paylater")
             };
         }
         else {
             const paymentMethods = await sdkInstance.findEligibleMethods();
             return {
                 isPayPalEligible: paymentMethods.isEligible("paypal"),
-                isVenmoEligible: paymentMethods.isEligible("venmo")
+                isVenmoEligible: paymentMethods.isEligible("venmo"),
+                isPayLaterEligible: paymentMethods.isEligible("paylater"),
+                payLaterDetails: paymentMethods.getDetails("paylater")
             };
         }
+
     };
 
     const initiateMessages = async (sdkInstance) => {
@@ -339,6 +354,29 @@ export default function Page() {
         const venmoButton = document.createElement("venmo-button");
         brandedButtonsRef.current?.append(venmoButton);
     };
+
+    async function setupPayLaterButton(sdkInstance, paylaterPaymentMethodDetails) {
+        const paylaterPaymentSession =
+            sdkInstance.createPayLaterOneTimePaymentSession(paymentSessionOptions);
+
+        const { productCode, countryCode } = paylaterPaymentMethodDetails;
+        const paylaterButton = document.querySelector("#paylater-button");
+
+        paylaterButton.productCode = productCode;
+        paylaterButton.countryCode = countryCode;
+        paylaterButton.removeAttribute("hidden");
+
+        paylaterButton.addEventListener("click", async () => {
+            try {
+                await paylaterPaymentSession.start(
+                    { presentationMode: "auto" },
+                    createOrder(branded),
+                );
+            } catch (error) {
+                console.error(error);
+            }
+        });
+    }
 
     // Setup ApplePay Button
     async function setupApplePayButton(sdkInstance) {
@@ -525,16 +563,26 @@ export default function Page() {
                             </label>
                         </div>
                     </div>
+                </div>
 
-                    <div className="columns">
-                        <div className="column">
-                            <div  >
-                                <paypal-button id="vault-button" ref={vaultButtonRef} type="subscribe" ></paypal-button>
-                            </div>
-                        </div>
-
+                <div className="columns">
+                    <div className="column">
+                        <paypal-pay-later-button
+                            id="paylater-button"
+                            hidden
+                        ></paypal-pay-later-button>
                     </div>
                 </div>
+
+                <div className="columns">
+                    <div className="column">
+                        <div  >
+                            <paypal-button id="vault-button" ref={vaultButtonRef} type="subscribe" ></paypal-button>
+                        </div>
+                    </div>
+
+                </div>
+
                 <div className="columns">
                     <div className="column">
                         <div id="apple-apple-pay-button-container">
