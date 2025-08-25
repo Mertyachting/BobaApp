@@ -74,7 +74,91 @@ export default function Page() {
     console.log()
 
 
-
+    const shipping_body = {
+        "intent": "CAPTURE",
+        "payment_source": {
+            "paypal": {
+                "experience_context": {
+                    "shipping_preference": "GET_FROM_FILE",
+                    "user_action": "PAY_NOW",
+                    "locale": "en-US",
+                    "brand_name": "Your Name Here",
+                    "return_url": "https://example.com/return",
+                    "cancel_url": "https://example.com/cancel",
+                    "order_update_callback_config": {
+                        "callback_events": ["SHIPPING_ADDRESS"],
+                        "callback_url": "https://webhooklistenerorco2024.onrender.com/callback/paypal"
+                    }
+                }
+            }
+        },
+        "purchase_units": [
+            {
+                "amount": {
+                    "currency_code": "EUR",
+                    "value": "105.00",
+                    "breakdown": {
+                        "item_total": {
+                            "currency_code": "EUR",
+                            "value": "100.00"
+                        },
+                        "tax_total": {
+                            "currency_code": "EUR",
+                            "value": "5.00"
+                        }
+                    }
+                },
+                "items": [
+                    {
+                        "name": "A Premium Item",
+                        "sku": "ABC12345",
+                        "unit_amount": {
+                            "currency_code": "EUR",
+                            "value": "100.00"
+                        },
+                        "quantity": "1",
+                        "category": "PHYSICAL_GOODS"
+                    }
+                ],
+                "shipping": {
+                    "options": [
+                        {
+                            "id": "1",
+                            "type": "SHIPPING",
+                            "label": "Free Shipping",
+                            "selected": "True",
+                            "amount": {
+                                "currency_code": "EUR",
+                                "value": "0.00"
+                            }
+                        },
+                        {
+                            "id": "2",
+                            "type": "SHIPPING",
+                            "label": "USPS Priority Shipping",
+                            "selected": "False",
+                            "amount": {
+                                "currency_code": "EUR",
+                                "value": "10.00"
+                            }
+                        },
+                        {
+                            "id": "3",
+                            "amount": {
+                                "currency_code": "EUR",
+                                "value": "10.00"
+                            },
+                            "type": "SHIPPING",
+                            "label": "1-Day Shipping",
+                            "selected": "False"
+                        }
+                    ]
+                },
+                "invoice_id": "67e55127139b2",
+                "description": "35345345345"
+            }
+        ]
+    }
     const request_body = {
 
         "intent": "CAPTURE",
@@ -151,7 +235,7 @@ export default function Page() {
                     "user_action": "PAY_NOW",
                     "order_update_callback_config": {
                         "callback_events": ["SHIPPING_ADDRESS"],
-                        "callback_url": "http://localhost:3000/api/shipping-callback"
+                        "callback_url": "https://webhooklistenerorco2024.onrender.com/callback/paypal"
                     },
                     "app_switch_context": {
                         "mobile_web": {
@@ -420,7 +504,7 @@ export default function Page() {
 
                 await paymentSession.start(
                     { presentationMode: "auto" },
-                    createOrder(request_body)
+                    createOrder(shipping_body)
                 );
 
             } catch (error) {
