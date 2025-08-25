@@ -69,7 +69,13 @@
                 "payment_method_preference": "IMMEDIATE_PAYMENT_REQUIRED",
                 "return_url": "https://example.com/returnUrl",
                 "shipping_preference": "SET_PROVIDED_ADDRESS",
-                "user_action": "PAY_NOW"
+                "user_action": "PAY_NOW",
+                "app_switch_context": {
+                    "mobile_web": {
+                        "return_flow": "AUTO",
+                        "buyer_user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.4 Mobile/15E148 Safari/604.1"
+                    }
+                }
             }
         }
     }

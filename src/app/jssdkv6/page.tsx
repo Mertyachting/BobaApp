@@ -5,8 +5,7 @@ import { Circle } from 'lucide-react';
 import branded from './../payloads/vanilla_branded.json'
 import alipay from './../payloads/alipay.json'
 import setupVaultToken from './../payloads/setup_vault_token.json'
-import vaultWithPurchase from './../payloads/vault_purchase.json'
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 
 async function createOrder(payload: object) {
     console.log('CLICK')
@@ -33,6 +32,8 @@ async function createOrder(payload: object) {
 
 }
 
+
+
 export default function Page() {
 
     const queryClient = useQueryClient()
@@ -40,12 +41,7 @@ export default function Page() {
     const [apm, setApms] = useState(false)
     const [vault, setVault] = useState(false)
     const [vaultPurchase, setVaultPurchase] = useState(false);
-
-    // Add refs to track button containers and cleanup
-    const brandedButtonsRef = useRef(null);
-    const vaultButtonRef = useRef(null);
-    const paymentSessionRef = useRef(null);
-    const sdkInstanceRef = useRef(null);
+    const [layout, setLayout] = useState('');
 
     const sdk_token = async () => {
         const res = await fetch("api/new_access_token",
@@ -60,6 +56,113 @@ export default function Page() {
         queryFn: sdk_token,
         staleTime: 9000
     })
+
+    const user_data = async () => {
+        const res = await fetch("api/user_agent",
+            { method: 'GET' }
+        )
+        const data = await res.json();
+        return data;
+    }
+
+    const userData = useQuery({
+        queryKey: ['userAgent'],
+        queryFn: user_data,
+        staleTime: 9000
+    })
+
+    console.log()
+
+
+
+    const request_body = {
+
+        "intent": "CAPTURE",
+        "invoice_id": "XYZ12315223",
+        "purchase_units": [
+            {
+                "reference_id": "homer",
+                "amount": {
+                    "currency_code": "USD",
+                    "value": "245",
+                    "breakdown": {
+                        "item_total": {
+                            "currency_code": "USD",
+                            "value": "150.00"
+                        },
+                        "tax_total": {
+                            "currency_code": "USD",
+                            "value": 95.00
+                        }
+                    }
+                },
+                "items": [
+                    {
+                        "name": "Lost Episode of Homers Bachelor Party",
+                        "quantity": "2",
+                        "unit_amount": {
+                            "currency_code": "USD",
+                            "value": "50.00"
+                        },
+                        "sku": "1000",
+                        "tax": {
+                            "currency_code": "USD",
+                            "value": "38.00"
+                        }
+                    },
+                    {
+                        "name": "Special Edition Duff Whiskey",
+                        "quantity": "1",
+                        "unit_amount": {
+                            "currency_code": "USD",
+                            "value": "50.00"
+                        },
+                        "sku": "20",
+                        "tax": {
+                            "currency_code": "USD",
+                            "value": "19.00"
+                        }
+                    }
+                ],
+                /* commented out because of shipping callback
+                "shipping": {
+                    "address": {
+                        "address_line_1": "Badensche Str. 24",
+                        "admin_area_1": "Berlin",
+                        "admin_area_2": "Berlin",
+                        "country_code": "DE",
+                        "postal_code": "10715"
+                    },
+                    
+                    "type": "SHIPPING"
+                    
+                },
+                */
+                "custom_id": "HelloHomer"
+            }
+        ],
+        "payment_source": {
+            "paypal": {
+                "email_address": "sb-srp47a45272330@personal.example.com",
+                "experience_context": {
+                    "cancel_url": "http://localhost:3000/jssdkv6",
+                    "return_url": "http://localhost:3000/jssdkv6",
+                    "shipping_preference": "GET_FROM_FILE",
+                    "user_action": "PAY_NOW",
+                    "order_update_callback_config": {
+                        "callback_events": ["SHIPPING_ADDRESS"],
+                        "callback_url": "http://localhost:3000/api/shipping-callback"
+                    },
+                    "app_switch_context": {
+                        "mobile_web": {
+                            "return_flow": "AUTO",
+                            "buyer_user_agent": userData.data?.network?.userAgent
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     async function createSetupToken(payload: object) {
         console.log('CLICK setup token')
@@ -84,7 +187,7 @@ export default function Page() {
 
         }
     }
-
+    //@ts-expect-error abc
     async function createPaymentToken(vaultSetupToken) {
         try {
             const response = await fetch("/api/payment_token", {
@@ -113,29 +216,6 @@ export default function Page() {
         }
     }
 
-    // Cleanup function to remove buttons and event listeners
-    const cleanupButtons = () => {
-        // Remove all existing buttons
-        if (brandedButtonsRef.current) {
-            brandedButtonsRef.current.innerHTML = '';
-            // Remove event listeners by cloning the node
-            const newNode = brandedButtonsRef.current.cloneNode(true);
-            brandedButtonsRef.current.parentNode?.replaceChild(newNode, brandedButtonsRef.current);
-            brandedButtonsRef.current = newNode;
-        }
-
-        if (vaultButtonRef.current) {
-            vaultButtonRef.current.innerHTML = '';
-            // Remove event listeners by cloning the node
-            const newNode = vaultButtonRef.current.cloneNode(true);
-            vaultButtonRef.current.parentNode?.replaceChild(newNode, vaultButtonRef.current);
-            vaultButtonRef.current = newNode;
-        }
-
-        // Clear payment session reference
-        paymentSessionRef.current = null;
-    };
-
     const apmHandler = () => {
         setApms(!apm)
     }
@@ -148,24 +228,13 @@ export default function Page() {
         setVaultPurchase(!vaultPurchase)
     }
 
-    // Effect to reload buttons when checkbox states change
-    useEffect(() => {
-        if (sdkInstanceRef.current && clientToken) {
-            cleanupButtons();
-            setTimeout(() => {
-                paypal_checkout();
-            }, 100); // Small delay to ensure cleanup is complete
-        }
-    }, [vault, vaultPurchase]); // Reload when these states change
-
     // Main orchestrator function
     const paypal_checkout = async () => {
         try {
             await clientToken;
             const sdkInstance = await initializePayPalSDK();
-            sdkInstanceRef.current = sdkInstance;
             const eligibleMethods = await getEligiblePaymentMethods(sdkInstance);
-            const messagesForPayLater = await initiateMessages(sdkInstance)
+            await initiateMessages(sdkInstance)
 
             if (eligibleMethods.isPayPalEligible) {
                 await setupPayPalButton(sdkInstance);
@@ -174,7 +243,8 @@ export default function Page() {
             if (eligibleMethods.isVenmoEligible) {
                 await setupVenmoButton(sdkInstance);
             }
-            await setupApplePayButton(sdkInstance)
+            await setupApplePayButton(sdkInstance);
+            await setupVaultButton(sdkInstance);
 
             if (eligibleMethods.isPayLaterEligible) {
                 const paylaterPaymentMethodDetails =
@@ -211,6 +281,7 @@ export default function Page() {
     };
 
     // Check payment method eligibility
+    //@ts-expect-error abc
     const getEligiblePaymentMethods = async (sdkInstance) => {
 
         if (vault) {
@@ -238,42 +309,47 @@ export default function Page() {
         }
 
     };
-
+    //@ts-expect-error abc
     const initiateMessages = async (sdkInstance) => {
         const messagesInstance = sdkInstance.createPayPalMessages();
         const messageElement = document.querySelector('paypal-message');
-        const content = await messagesInstance.fetchContent({
+        await messagesInstance.fetchContent({
             amount: "300.00",
             currencyCode: "USD",
+            layout: layout,
+            //@ts-expect-error abc
             onReady: (content) => messageElement.setContent(content),
         });
-        function triggerAmountUpdate(amount) {
-            content.update({ amount });
-        }
     }
 
 
 
     // Create payment session event handlers
     const createPaymentEventHandlers = () => ({
+        //@ts-expect-error abc
         onApprove: (data) => {
             console.log("Payment approved:", data);
         },
+        //@ts-expect-error abc
         onShippingAddressChange: (data) => {
             console.log("Shipping address changed:", data);
         },
+        //@ts-expect-error abc
         onShippingOptionsChange: (data) => {
             console.log("Shipping options updated:", data);
         },
+        //@ts-expect-error abc
         onCancel: (data) => {
             console.warn("Payment canceled:", data);
         },
+        //@ts-expect-error abc
         onError: (error) => {
             console.error("Error during checkout:", error);
         },
     });
 
     const paymentSessionOptions = {
+        //@ts-expect-error abc
         async onApprove(data) {
             console.log("onApprove", data);
             const createPaymentTokenResponse = await createPaymentToken(
@@ -281,91 +357,145 @@ export default function Page() {
             );
             console.log("Create payment token response: ", createPaymentTokenResponse);
         },
+        //@ts-expect-error abc
         onCancel(data) {
             console.log("onCancel", data);
         },
+        //@ts-expect-error abc
         onError(error) {
             console.log("onError", error);
         },
     };
 
     // Setup PayPal button and payment session
+    //@ts-expect-error abc
     const setupPayPalButton = async (sdkInstance) => {
-        const paypalButton = document.createElement("paypal-button");
 
-        if (vault) {
-            vaultButtonRef.current?.append(paypalButton);
-        } else {
-            brandedButtonsRef.current?.append(paypalButton);
-        }
+        const paymentSession = sdkInstance.createPayPalOneTimePaymentSession(
+            createPaymentEventHandlers()
+        );
+        console.log("One-time payment session created successfully:", paymentSession);
 
-        let paymentSession;
-        if (vault) {
-            paymentSession = sdkInstance.createPayPalSavePaymentSession(
-                paymentSessionOptions,
-            );
-            console.log("Vault payment session created successfully:", paymentSession);
-        } else {
-            paymentSession = sdkInstance.createPayPalOneTimePaymentSession(
-                createPaymentEventHandlers()
-            );
-            console.log("One-time payment session created successfully:", paymentSession);
-        }
-
-        paymentSessionRef.current = paymentSession;
         attachPayPalClickHandler(paymentSession);
     };
+    //@ts-expect-error abc
+    const setupVaultButton = async (sdkInstance) => {
 
-    // Handle PayPal button click
-    const attachPayPalClickHandler = (paymentSession) => {
+        const paymentSession = sdkInstance.createPayPalSavePaymentSession(
+            paymentSessionOptions,
+        );
+        console.log("Vault payment session created successfully:", paymentSession);
+        attachVaultClickHandler(paymentSession);
+    };
+    //@ts-expect-error abc
+
+    const attachVaultClickHandler = (paymentSession) => {
+        const vaultButton = document.querySelector('#vault-button');
+
         const onClick = async () => {
             try {
-                if (vault) {
-                    await paymentSession.start(
-                        { presentationMode: "auto" },
-                        createSetupToken(setupVaultToken)
-                    );
-                } else if (vaultPurchase) {
-                    await paymentSession.start(
-                        { presentationMode: "auto" },
-                        createOrder(vaultWithPurchase)
-                    );
-                } else {
-                    await paymentSession.start(
-                        { presentationMode: "auto" },
-                        createOrder(branded)
-                    );
-                }
+                await paymentSession.start(
+                    { presentationMode: "auto" },
+                    createSetupToken(setupVaultToken)
+                );
+            }
+            catch (error) {
+                console.error("Error starting checkout flow:", error);
+            }
+
+        }
+
+        vaultButton?.addEventListener("click", onClick);
+    }
+
+    // Handle PayPal button click
+    //@ts-expect-error abc
+    const attachPayPalClickHandler = (paymentSession) => {
+
+
+        const brandedButtons = document.querySelector('#branded-buttons');
+
+        const onClick = async () => {
+            try {
+
+                await paymentSession.start(
+                    { presentationMode: "auto" },
+                    createOrder(request_body)
+                );
+
             } catch (error) {
                 console.error("Error starting checkout flow:", error);
             }
         };
-
         // Add event listener to the appropriate container
-        if (vault) {
-            vaultButtonRef.current?.addEventListener("click", onClick);
-        } else {
-            brandedButtonsRef.current?.addEventListener("click", onClick);
-        }
+        brandedButtons?.addEventListener("click", onClick);
     };
 
     // Setup Venmo button
+    //@ts-expect-error abc
     const setupVenmoButton = async (sdkInstance) => {
-        const venmoButton = document.createElement("venmo-button");
-        brandedButtonsRef.current?.append(venmoButton);
-    };
 
+        const paymentSessionOptions = {
+            //@ts-expect-error abc
+            async onApprove(data) {
+                console.log("Payment approved:", data);
+                try {
+                    const orderData = await captureOrder({
+                        orderId: data.orderId,
+                    });
+                    console.log("Payment captured successfully:", orderData);
+                } catch (error) {
+                    console.error("Payment capture failed:", error);
+                }
+            },
+            //@ts-expect-error abc
+
+            onCancel(data) {
+                console.log("Payment cancelled:", data);
+
+            },
+            //@ts-expect-error abc
+            onError(error) {
+                console.error("Payment error:", error);
+
+            },
+        };
+
+        const paymentSession = sdkInstance.createVenmoOneTimePaymentSession(
+            paymentSessionOptions,
+        );
+        const venmoButton = document.querySelector("#venmo-button");
+
+        const onClick = async () => {
+            try {
+
+                await paymentSession.start(
+                    { presentationMode: "auto" },
+                    createOrder(request_body)
+                );
+
+            } catch (error) {
+                console.error("Error starting checkout flow:", error);
+            }
+        };
+        venmoButton?.addEventListener("click", onClick);
+
+
+    };
+    //@ts-expect-error abc
     async function setupPayLaterButton(sdkInstance, paylaterPaymentMethodDetails) {
         const paylaterPaymentSession =
             sdkInstance.createPayLaterOneTimePaymentSession(paymentSessionOptions);
 
         const { productCode, countryCode } = paylaterPaymentMethodDetails;
         const paylaterButton = document.querySelector("#paylater-button");
-
+        //@ts-expect-error abc
         paylaterButton.productCode = productCode;
+        //@ts-expect-error abc
         paylaterButton.countryCode = countryCode;
+        //@ts-expect-error abc
         paylaterButton.removeAttribute("hidden");
-
+        //@ts-expect-error abc
         paylaterButton.addEventListener("click", async () => {
             try {
                 await paylaterPaymentSession.start(
@@ -379,6 +509,7 @@ export default function Page() {
     }
 
     // Setup ApplePay Button
+    //@ts-expect-error abc
     async function setupApplePayButton(sdkInstance) {
         console.log("Apple Pay Button Load")
         try {
@@ -417,23 +548,26 @@ export default function Page() {
                 };
                 console.log("Apple Pay Button Load 2")
                 console.log("Creating Apple Pay SDK session...");
-                let appleSdkApplePayPaymentSession = new ApplePaySession(
+                //@ts-expect-error abc
+                const appleSdkApplePayPaymentSession = new ApplePaySession(
                     4,
                     paymentRequest,
                 );
-
+                //@ts-expect-error abc
                 appleSdkApplePayPaymentSession.onvalidatemerchant = (event) => {
                     console.log("Validating Apple Pay merchant & domain...");
                     paypalSdkApplePayPaymentSession
                         .validateMerchant({
                             validationUrl: event.validationURL,
                         })
+                        //@ts-expect-error abc
                         .then((payload) => {
                             appleSdkApplePayPaymentSession.completeMerchantValidation(
                                 payload.merchantSession,
                             );
                             console.log("Completed merchant validation");
                         })
+                        //@ts-expect-error abc
                         .catch((err) => {
                             console.log("Paypal validatemerchant error", err);
                             console.error(err);
@@ -447,16 +581,18 @@ export default function Page() {
                     });
                     console.log("Completed payment method selection");
                 };
-
+                //@ts-expect-error abc
                 appleSdkApplePayPaymentSession.onpaymentauthorized = async (event) => {
                     try {
                         console.log("Apple Pay authorized... \nCreating PayPal order...");
+                        //@ts-expect-error abc
                         const createdOrder = await createOrder();
                         console.log(
                             "Confirming PayPal order with applepay payment source...",
                         );
 
                         await paypalSdkApplePayPaymentSession.confirmOrder({
+                            //@ts-expect-error abc
                             orderId: createdOrder.orderId,
                             token: event.payment.token,
                             billingContact: event.payment.billingContact,
@@ -466,7 +602,9 @@ export default function Page() {
                         console.log(
                             `Capturing order ${JSON.stringify(createdOrder, null, 2)}...`,
                         );
+                        //@ts-expect-error abc
                         const orderData = await captureOrder({
+                            //@ts-expect-error abc
                             orderId: createdOrder.orderId,
                             fundingSource: "applepay",
                             headers: { "X-CSRF-TOKEN": "<%= csrfToken %>" },
@@ -474,11 +612,13 @@ export default function Page() {
                         console.log(JSON.stringify(orderData, null, 2));
                         console.log("Completed Apple Pay SDK session with STATUS_SUCCESS...");
                         appleSdkApplePayPaymentSession.completePayment({
+                            //@ts-expect-error abc
                             status: window.ApplePaySession.STATUS_SUCCESS,
                         });
                     } catch (err) {
                         console.error(err);
                         appleSdkApplePayPaymentSession.completePayment({
+                            //@ts-expect-error abc
                             status: window.ApplePaySession.STATUS_FAILURE,
                         });
                     }
@@ -493,6 +633,32 @@ export default function Page() {
         } catch (error) {
             console.error(error);
         }
+    }
+    //@ts-expect-error abc
+    const messagingCallback = (data) => {
+        console.log('data is: ', data.config)
+        setLayout(data.config)
+        console.log(layout)
+        paypal_checkout()
+
+    }
+
+    function messagingConfig() {
+        //@ts-expect-error abc
+        window.merchantConfigurators?.Messaging({
+            styleOverrides: {
+                button: 'buttonOverride',
+                header: 'headerOverride'
+            },
+            config: {},
+            locale: 'en-US',
+            merchantIdentifier: process.env.NEXT_PUBLIC_MERCHANT_ID,
+            partnerClientId: process.env.NEXT_PUBLIC_CLIENT_ID,
+            partnerName: 'Xur',
+            bnCode: 'Xur_PPCP',
+            onSave: messagingCallback,
+            placements: ['product', 'checkout', 'cart']
+        });
     }
 
 
@@ -522,7 +688,13 @@ export default function Page() {
                     </Script>
 
                     <Script id='applePay' src='https://applepay.cdn-apple.com/jsapi/v1/apple-pay-sdk.js'>
+                    </Script>
 
+                    <Script
+                        id='messagingConfigurator'
+                        src='https://www.paypalobjects.com/merchant-library/merchant-configurator.js'
+                        onLoad={() => messagingConfig()}
+                        defer>
 
                     </Script>
                 </>
@@ -536,11 +708,12 @@ export default function Page() {
                 <div className="columns">
 
                     <div className="column">
-                        <div >
-                            <paypal-button id="branded-buttons" ref={brandedButtonsRef} type="buynow" ></paypal-button>
+                        <div>
+                            <paypal-button id="branded-buttons" type="buynow" ></paypal-button>
                         </div>
                         <div id="paypal-message">
-                            <paypal-message></paypal-message>
+                            <paypal-message>
+                            </paypal-message>
                         </div>
 
                     </div>
@@ -577,10 +750,15 @@ export default function Page() {
                 <div className="columns">
                     <div className="column">
                         <div  >
-                            <paypal-button id="vault-button" ref={vaultButtonRef} type="subscribe" ></paypal-button>
+                            <paypal-button id="vault-button" type="subscribe"></paypal-button>
                         </div>
                     </div>
+                </div>
 
+                <div className="columns">
+                    <div className="column">
+                        <venmo-button id="venmo-button"></venmo-button>
+                    </div>
                 </div>
 
                 <div className="columns">
@@ -603,11 +781,12 @@ export default function Page() {
                     : <>
                     </>}
 
-
-            </div>
-
-
-
+                <div className="columns">
+                    <div className="column has-background-light">
+                        <div id="messaging-configurator"></div>
+                    </div>
+                </div>
+            </div >
         </>
     )
 }

@@ -1,9 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, userAgent } from "next/server";
 import { getAccessToken } from "@/app/helpers/helpers";
 import { generateUUID } from "@/app/helpers/helpers";
-
-
-
 
 
 
@@ -16,10 +13,21 @@ const jwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBU1l6WGpZQi1JM
 
 
 export async function POST(req: NextRequest) {
+
     // use the cart information passed from the front-end to calculate the purchase unit details
     const reqBody = await req.json();
     const base = 'https://api-m.sandbox.paypal.com'
     const url = `${base}/v2/checkout/orders`;
+
+    /*
+    const { device } = userAgent(reqBody)
+
+    // device.type can be: 'mobile', 'tablet', 'console', 'smarttv',
+    // 'wearable', 'embedded', or undefined (for desktop browsers)
+    const viewport = device.type || 'desktop'
+
+    console.log('viewport', viewport, device)
+    */
 
     try {
         const response = await fetch(url,

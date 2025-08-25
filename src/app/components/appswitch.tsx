@@ -51,6 +51,68 @@ export default function AppSwitch() {
     }
 
 
+    const request_body = {
+        "intent": "CAPTURE",
+        "payment_source": {
+            "paypal": {
+                "experience_context": {
+                    "user_action": "PAY_NOW",
+                    "shipping_preference": "GET_FROM_FILE",
+                    "return_url": "https://example.com/returnUrl",
+                    "cancel_url": "https://example.com/cancelUrl",
+                    "order_update_callback_config": {
+                        "callback_events": ["SHIPPING_ADDRESS"],
+                        "callback_url": "http://192.168.178.34:3000/api/shipping-callback"
+                    }
+                }
+            }
+        }, "purchase_units": [{
+            "reference_id": "d9f80740-38f0-11e8-b467-0ed5f89f718b",
+            "items": [{
+                "name": "T-Shirt",
+                "description": "Super Fresh Shirt",
+                "unit_amount": {
+                    "currency_code": "USD",
+                    "value": "50.00"
+                },
+                "quantity": "1",
+                "category": "PHYSICAL_GOODS",
+                "sku": "sku01",
+                "image_url": "https://example.com/static/images/items/1/tshirt_green.jpg",
+                "url": "https://example.com/url-to-the-item-being-purchased-1",
+                "upc": {
+                    "type": "UPC-A",
+                    "code": "123456789012"
+                }
+            }, {
+                "name": "Shoes",
+                "description": "Running, Size 10.5",
+                "sku": "sku02",
+                "unit_amount": {
+                    "currency_code": "USD",
+                    "value": "25.00"
+                },
+                "quantity": "2",
+                "category": "PHYSICAL_GOODS",
+                "image_url": "https://example.com/static/images/items/1/shoes_running.jpg",
+                "url": "https://example.com/url-to-the-item-being-purchased-2",
+                "upc": {
+                    "type": "UPC-A",
+                    "code": "987654321012"
+                }
+            }],
+            "amount": {
+                "currency_code": "USD",
+                "value": "100.00",
+                "breakdown": {
+                    "item_total": {
+                        "currency_code": "USD",
+                        "value": "100.00"
+                    }
+                }
+            }
+        }]
+    }
 
     const payload = {
         "intent": "CAPTURE",
@@ -129,7 +191,7 @@ export default function AppSwitch() {
                 },
                 // use the "body" param to optionally pass additional order information
                 // like product ids and quantities
-                body: JSON.stringify(payload),
+                body: JSON.stringify(request_body),
             })
             const data = await respone.json();
             if (data.id) {
