@@ -6,6 +6,7 @@ import branded from './../payloads/vanilla_branded.json'
 import alipay from './../payloads/alipay.json'
 import setupVaultToken from './../payloads/setup_vault_token.json'
 import { useState } from 'react';
+import { generateUUID } from "@/app/helpers/helpers";
 
 async function createOrder(payload: object) {
     console.log('CLICK')
@@ -73,6 +74,33 @@ export default function Page() {
 
     console.log()
 
+    const appswitch_body = {
+        intent: "CAPTURE",
+        paymentSource: {
+            paypal: {
+                experienceContext: {
+                    shippingPreference: "NO_SHIPPING",
+                    userAction: "CONTINUE",
+                    returnUrl: "http://localhost:3000/jssdkv6",
+                    cancelUrl: "http://localhost:3000/jssdkv6",
+                },
+            },
+        },
+        purchaseUnits: [
+            {
+                amount: {
+                    currencyCode: "USD",
+                    value: "10.00",
+                    breakdown: {
+                        itemTotal: {
+                            currencyCode: "USD",
+                            value: "10.00",
+                        },
+                    },
+                },
+            },
+        ],
+    };
 
     const shipping_body = {
         "intent": "CAPTURE",
@@ -95,15 +123,15 @@ export default function Page() {
         "purchase_units": [
             {
                 "amount": {
-                    "currency_code": "EUR",
+                    "currency_code": "USD",
                     "value": "105.00",
                     "breakdown": {
                         "item_total": {
-                            "currency_code": "EUR",
+                            "currency_code": "USD",
                             "value": "100.00"
                         },
                         "tax_total": {
-                            "currency_code": "EUR",
+                            "currency_code": "USD",
                             "value": "5.00"
                         }
                     }
@@ -113,7 +141,7 @@ export default function Page() {
                         "name": "A Premium Item",
                         "sku": "ABC12345",
                         "unit_amount": {
-                            "currency_code": "EUR",
+                            "currency_code": "USD",
                             "value": "100.00"
                         },
                         "quantity": "1",
@@ -128,7 +156,7 @@ export default function Page() {
                             "label": "Free Shipping",
                             "selected": "True",
                             "amount": {
-                                "currency_code": "EUR",
+                                "currency_code": "USD",
                                 "value": "0.00"
                             }
                         },
@@ -138,14 +166,14 @@ export default function Page() {
                             "label": "USPS Priority Shipping",
                             "selected": "False",
                             "amount": {
-                                "currency_code": "EUR",
+                                "currency_code": "USD",
                                 "value": "10.00"
                             }
                         },
                         {
                             "id": "3",
                             "amount": {
-                                "currency_code": "EUR",
+                                "currency_code": "USD",
                                 "value": "10.00"
                             },
                             "type": "SHIPPING",
@@ -159,6 +187,7 @@ export default function Page() {
             }
         ]
     }
+
     const request_body = {
 
         "intent": "CAPTURE",
@@ -231,18 +260,21 @@ export default function Page() {
                 "experience_context": {
                     "cancel_url": "http://localhost:3000/jssdkv6",
                     "return_url": "http://localhost:3000/jssdkv6",
-                    "shipping_preference": "GET_FROM_FILE",
+                    "shipping_preference": "NO_SHIPPING",
                     "user_action": "PAY_NOW",
+                    /*
                     "order_update_callback_config": {
                         "callback_events": ["SHIPPING_ADDRESS"],
-                        "callback_url": "https://webhooklistenerorco2024.onrender.com/callback/paypal"
+                        "callback_url": "https://10.225.155.159:3000/api/shipping-callback"
                     },
+                    *//*
                     "app_switch_context": {
                         "mobile_web": {
                             "return_flow": "AUTO",
                             "buyer_user_agent": userData.data?.network?.userAgent
                         }
                     }
+                        */
                 }
             }
         }
@@ -319,6 +351,8 @@ export default function Page() {
             const sdkInstance = await initializePayPalSDK();
             const eligibleMethods = await getEligiblePaymentMethods(sdkInstance);
             await initiateMessages(sdkInstance)
+            const fastlane = await sdkInstance.createFastlane();
+
 
             if (eligibleMethods.isPayPalEligible) {
                 await setupPayPalButton(sdkInstance);
@@ -336,6 +370,11 @@ export default function Page() {
                 setupPayLaterButton(sdkInstance, paylaterPaymentMethodDetails);
             }
 
+            if (fastlane) {
+                await setupFastlaneSdk(sdkInstance);
+                console.log('fastlane available')
+            }
+
             console.log("SDK initialized successfully:", sdkInstance);
         } catch (error) {
             console.error("Error initializing PayPal checkout:", error);
@@ -349,6 +388,7 @@ export default function Page() {
         //@ts-expect-error loaded from the script not from the package
         return await window.paypal.createInstance({
             clientToken,
+            clientMetadataId: generateUUID(),
             components: [
                 "paypal-payments",
                 "venmo-payments",
@@ -359,11 +399,130 @@ export default function Page() {
             ],
             locale: "en-US",
             testBuyerCountry: "US",
-            pageType: "checkout",
+            pageType: "product-details",
             partnerAttributionId: "Xur_PPCP"
         });
     };
 
+    async function setupFastlaneSdk(sdkInstance) {
+
+        const fastlane = await sdkInstance.createFastlane();
+        fastlane?.setLocale("en_us");
+
+        // Render Fastlane watermark
+        if (fastlane) {
+            const fastlaneWatermark = await fastlane?.FastlaneWatermarkComponent({
+                includeAdditionalInfo: true,
+            });
+            fastlaneWatermark?.render("#watermark-container");
+        } else {
+            console.log("Fastlane not found")
+        }
+
+
+        // Handle email submission
+        const emailSubmitButton = document.getElementById("email-submit-button");
+        emailSubmitButton.addEventListener("click", async (e) => {
+            e.preventDefault();
+
+            const { customerContextId } = await fastlane.identity.lookupCustomerByEmail(
+                emailInput.value,
+            );
+
+            let shouldRenderFastlaneMemberExperience = false;
+            let profileData;
+
+            if (customerContextId) {
+                const response = await fastlane.identity.triggerAuthenticationFlow(customerContextId);
+
+                if (response.authenticationState === "succeeded") {
+                    shouldRenderFastlaneMemberExperience = true;
+                    profileData = response.profileData;
+                }
+            }
+
+            // Route to appropriate experience
+            if (shouldRenderFastlaneMemberExperience) {
+                renderFastlaneMemberExperience(profileData);
+            } else {
+                renderFastlaneGuestExperience();
+            }
+        });
+
+
+        async function renderFastlaneMemberExperience(profileData) {
+            if (profileData.shippingAddress) {
+                setShippingAddressDisplay(profileData.shippingAddress);
+
+                // Allow address changes
+                const changeAddressButton = document.getElementById("change-shipping-button");
+                changeAddressButton.addEventListener("click", async () => {
+                    const { selectedAddress, selectionChanged } =
+                        await fastlane.profile.showShippingAddressSelector();
+
+                    if (selectionChanged) {
+                        profileData.shippingAddress = selectedAddress;
+                        setShippingAddressDisplay(profileData.shippingAddress);
+                    }
+                });
+
+                // Render payment component with shipping address
+                const fastlanePaymentComponent = await fastlane.FastlanePaymentComponent({
+                    options: {},
+                    shippingAddress: profileData.shippingAddress,
+                });
+
+                fastlanePaymentComponent.render("#payment-container");
+            }
+        }
+
+        async function renderFastlaneGuestExperience() {
+            const cardTestingInfo = document.getElementById("card-testing-info");
+            cardTestingInfo.removeAttribute("hidden");
+
+            const FastlanePaymentComponent = await fastlane.FastlanePaymentComponent({});
+            await FastlanePaymentComponent.render("#card-container");
+            // Get payment token
+            const { id } = await fastlanePaymentComponent.getPaymentToken();
+        }
+
+
+
+        // Create order via backend API
+        async function createOrder(paymentToken) {
+            const response = await fetch("/paypal-api/checkout/orders/create", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "PayPal-Request-Id": Date.now().toString(),
+                },
+                body: JSON.stringify({
+                    paymentSource: {
+                        card: {
+                            singleUseToken: paymentToken,
+                        },
+                    },
+                    purchaseUnits: [
+                        {
+                            amount: {
+                                currencyCode: "USD",
+                                value: "10.00",
+                                breakdown: {
+                                    itemTotal: {
+                                        currencyCode: "USD",
+                                        value: "10.00",
+                                    },
+                                },
+                            },
+                        },
+                    ],
+                    intent: "CAPTURE",
+                }),
+            });
+
+            return await response.json();
+        }
+    }
     // Check payment method eligibility
     //@ts-expect-error abc
     const getEligiblePaymentMethods = async (sdkInstance) => {
@@ -414,6 +573,7 @@ export default function Page() {
         onApprove: (data) => {
             console.log("Payment approved:", data);
         },
+        /*
         //@ts-expect-error abc
         onShippingAddressChange: (data) => {
             console.log("Shipping address changed:", data);
@@ -422,6 +582,7 @@ export default function Page() {
         onShippingOptionsChange: (data) => {
             console.log("Shipping options updated:", data);
         },
+        */
         //@ts-expect-error abc
         onCancel: (data) => {
             console.warn("Payment canceled:", data);
@@ -455,12 +616,24 @@ export default function Page() {
     //@ts-expect-error abc
     const setupPayPalButton = async (sdkInstance) => {
 
-        const paymentSession = sdkInstance.createPayPalOneTimePaymentSession(
-            createPaymentEventHandlers()
-        );
-        console.log("One-time payment session created successfully:", paymentSession);
+        try {
+            const paymentSession = sdkInstance.createPayPalOneTimePaymentSession(
+                createPaymentEventHandlers()
+            );
+            console.log("One-time payment session created successfully:", paymentSession);
 
-        attachPayPalClickHandler(paymentSession);
+            if (paymentSession.hasReturned()) {
+                await paymentSession.resume();
+            } else {
+                attachPayPalClickHandler(paymentSession);
+            }
+        }
+
+        catch (error) {
+            console.error(error);
+        }
+
+
     };
     //@ts-expect-error abc
     const setupVaultButton = async (sdkInstance) => {
@@ -502,10 +675,19 @@ export default function Page() {
         const onClick = async () => {
             try {
 
-                await paymentSession.start(
-                    { presentationMode: "auto" },
-                    createOrder(shipping_body)
+                const { redirectURL } = await paymentSession.start(
+                    {
+                        presentationMode: "direct-app-switch",
+                        autoRedirect: {
+                            enabled: true,
+                        }
+                    },
+                    createOrder(request_body)
                 );
+                if (redirectURL) {
+                    console.log(`redirectURL: ${redirectURL}`);
+                    window.location.assign(redirectURL);
+                }
 
             } catch (error) {
                 console.error("Error starting checkout flow:", error);
@@ -864,6 +1046,34 @@ export default function Page() {
 
                     : <>
                     </>}
+
+                <div id="fastLane-form">
+
+                    <form id="email-form">
+                        <input type="email" id="email-input" />
+                        <div id="watermark-container"></div>
+                        <button id="email-submit-button">Submit</button>
+                    </form>
+
+
+                    <div id="card-container"></div>
+                    <div id="payment-container"></div>
+
+
+                    <div id="shipping-display-container" hidden></div>
+                    <button id="change-shipping-button" hidden>Change Shipping Address</button>
+
+
+                    <button id="submit-button" hidden>Submit Order</button>
+
+
+                    <p id="card-testing-info" hidden>
+                        For more info on testing cards with PayPal, see
+                        <a href="https://developer.paypal.com/tools/sandbox/card-testing/">
+                            https://developer.paypal.com/tools/sandbox/card-testing/
+                        </a>
+                    </p>
+                </div>
 
                 <div className="columns">
                     <div className="column has-background-light">
