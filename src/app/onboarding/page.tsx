@@ -1,36 +1,14 @@
 
 'use client'
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Check, TriangleAlert } from "lucide-react";
 import Script from "next/script";
-import { NextResponse } from "next/server";
-import { useQuery } from "@tanstack/react-query";
 
 
 
 export default function Onboarding() {
     //useEffect(() => { getOnboardingData() })
-
-    useEffect(() => {
-        // expose the callback globally
-        window.onboardedCallback = async (authCode, sharedId) => {
-            setAuthCode(authCode)
-            setShareID(sharedId)
-            try {
-                await fetch('/api/webhook', {
-                    method: 'POST',
-                    headers: { 'content-type': 'application/json' },
-                    body: JSON.stringify({ authCode, sharedId }),
-                });
-            } catch (err) {
-                alert('Something went wrong');
-            }
-        };
-
-        // optional: tidy up when the component unmounts
-        return () => delete window.onboardedCallback;
-    }, []);
 
     const [email, setEmail] = useState('sb-89a43m40169106@business.example.com');
     const [email_not_verified, setEmailNotVerified] = useState(false);
@@ -42,9 +20,11 @@ export default function Onboarding() {
     const [cc, setCC] = useState(true)
     const [appswitch, setAppSwitch] = useState(true)
     const [action_url, setActionUrl] = useState('')
+    /*
     const [authCode, setAuthCode] = useState<string | null>(null)
     const [sharedId, setShareID] = useState<string | null>(null)
     const [sellerAccessToken, setSellerAccessToken] = useState<string | null>(null)
+    */
 
 
     const body = {
@@ -192,6 +172,7 @@ export default function Onboarding() {
         setActionUrl(data.data.links[1].href);
     }
 
+    /*
     const seller_token = useQuery({
         queryKey: [authCode ? authCode : '', sharedId ? sharedId : ''],
         queryFn: async () => {
@@ -217,8 +198,10 @@ export default function Onboarding() {
         },
         enabled: !!sharedId
     })
+      
 
     console.log(sellerAccessToken)
+      */
     /*
         const client_credentials = useQuery({
             queryKey: [sellerAccessToken],
@@ -329,8 +312,11 @@ export default function Onboarding() {
                     <div className="columns">
 
                         <div className="column">
-                            <h1 className="title is-6">{authCode}</h1>
-                            <h1 className="title is-6">{sharedId}</h1>
+
+                            {/*  <h1 className="title is-6">{authCode}</h1>
+                            <h1 className="title is-6">{sharedId}</h1> */}
+
+
 
 
                         </div>

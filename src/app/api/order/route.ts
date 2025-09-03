@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse, userAgent } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAccessToken } from "@/app/helpers/helpers";
 import { generateUUID } from "@/app/helpers/helpers";
 

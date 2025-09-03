@@ -1,5 +1,6 @@
 "use client";
 
+/*
 import React from "react";
 
 import { usePayPalButtons } from "@paypal/react-paypal-js";
@@ -21,8 +22,10 @@ const client_id = process.env.NEXT_PUBLIC_CLIENT_ID ? process.env.NEXT_PUBLIC_CL
 const merchant_id = process.env.NEXT_PUBLIC_MERCHANT_ID ? process.env.NEXT_PUBLIC_MERCHANT_ID : 'test';
 */
 
+
 export default function AppSwitch() {
 
+    /*
     let IsReadyToPayRequest = { allowedPaymentMethods: ['CARD', 'TOKENIZED_CARD'] }
 
     function onGooglePayLoaded() {
@@ -44,7 +47,7 @@ export default function AppSwitch() {
         console.log("G-Pay Button function initiated")
         const paymentsClient = new window.google.payments.api.PaymentsClient({ environment: 'TEST' });
         const button = paymentsClient.createButton({
-            onClick: console.log("CLICKER") /* To be defined later */,
+            onClick: console.log("CLICKER"),
             allowedPaymentMethods: ['CARD', 'TOKENIZED_CARD']
         });
         document.getElementById('googlepay').appendChild(button);
@@ -328,4 +331,11 @@ export default function AppSwitch() {
             </div >
         </>
     );
+    */
+    return (
+        <>
+            <h1>Hi I am AppSwitch</h1>
+        </>
+    )
+
 };

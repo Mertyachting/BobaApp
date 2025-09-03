@@ -43,6 +43,7 @@ export default function Page() {
     const [vault, setVault] = useState(false)
     const [vaultPurchase, setVaultPurchase] = useState(false);
     const [layout, setLayout] = useState('');
+    const email = 'sb-srp47a45272330@personal.example.com';
 
     const sdk_token = async () => {
         const res = await fetch("api/new_access_token",
@@ -58,6 +59,8 @@ export default function Page() {
         staleTime: 9000
     })
 
+    /*
+
     const user_data = async () => {
         const res = await fetch("api/user_agent",
             { method: 'GET' }
@@ -65,128 +68,130 @@ export default function Page() {
         const data = await res.json();
         return data;
     }
-
-    const userData = useQuery({
-        queryKey: ['userAgent'],
-        queryFn: user_data,
-        staleTime: 9000
-    })
-
-    console.log()
-
-    const appswitch_body = {
-        intent: "CAPTURE",
-        paymentSource: {
-            paypal: {
-                experienceContext: {
-                    shippingPreference: "NO_SHIPPING",
-                    userAction: "CONTINUE",
-                    returnUrl: "http://localhost:3000/jssdkv6",
-                    cancelUrl: "http://localhost:3000/jssdkv6",
-                },
-            },
-        },
-        purchaseUnits: [
-            {
-                amount: {
-                    currencyCode: "USD",
-                    value: "10.00",
-                    breakdown: {
-                        itemTotal: {
-                            currencyCode: "USD",
-                            value: "10.00",
-                        },
+    
+        const userData = useQuery({
+            queryKey: ['userAgent'],
+            queryFn: user_data,
+            staleTime: 9000
+        })
+            
+    
+        console.log()
+    
+        const appswitch_body = {
+            intent: "CAPTURE",
+            paymentSource: {
+                paypal: {
+                    experienceContext: {
+                        shippingPreference: "NO_SHIPPING",
+                        userAction: "CONTINUE",
+                        returnUrl: "http://localhost:3000/jssdkv6",
+                        cancelUrl: "http://localhost:3000/jssdkv6",
                     },
                 },
             },
-        ],
-    };
-
-    const shipping_body = {
-        "intent": "CAPTURE",
-        "payment_source": {
-            "paypal": {
-                "experience_context": {
-                    "shipping_preference": "GET_FROM_FILE",
-                    "user_action": "PAY_NOW",
-                    "locale": "en-US",
-                    "brand_name": "Your Name Here",
-                    "return_url": "https://example.com/return",
-                    "cancel_url": "https://example.com/cancel",
-                    "order_update_callback_config": {
-                        "callback_events": ["SHIPPING_ADDRESS"],
-                        "callback_url": "https://webhooklistenerorco2024.onrender.com/callback/paypal"
+            purchaseUnits: [
+                {
+                    amount: {
+                        currencyCode: "USD",
+                        value: "10.00",
+                        breakdown: {
+                            itemTotal: {
+                                currencyCode: "USD",
+                                value: "10.00",
+                            },
+                        },
+                    },
+                },
+            ],
+        };
+    
+        const shipping_body = {
+            "intent": "CAPTURE",
+            "payment_source": {
+                "paypal": {
+                    "experience_context": {
+                        "shipping_preference": "GET_FROM_FILE",
+                        "user_action": "PAY_NOW",
+                        "locale": "en-US",
+                        "brand_name": "Your Name Here",
+                        "return_url": "https://example.com/return",
+                        "cancel_url": "https://example.com/cancel",
+                        "order_update_callback_config": {
+                            "callback_events": ["SHIPPING_ADDRESS"],
+                            "callback_url": "https://webhooklistenerorco2024.onrender.com/callback/paypal"
+                        }
                     }
                 }
-            }
-        },
-        "purchase_units": [
-            {
-                "amount": {
-                    "currency_code": "USD",
-                    "value": "105.00",
-                    "breakdown": {
-                        "item_total": {
-                            "currency_code": "USD",
-                            "value": "100.00"
-                        },
-                        "tax_total": {
-                            "currency_code": "USD",
-                            "value": "5.00"
-                        }
-                    }
-                },
-                "items": [
-                    {
-                        "name": "A Premium Item",
-                        "sku": "ABC12345",
-                        "unit_amount": {
-                            "currency_code": "USD",
-                            "value": "100.00"
-                        },
-                        "quantity": "1",
-                        "category": "PHYSICAL_GOODS"
-                    }
-                ],
-                "shipping": {
-                    "options": [
-                        {
-                            "id": "1",
-                            "type": "SHIPPING",
-                            "label": "Free Shipping",
-                            "selected": "True",
-                            "amount": {
+            },
+            "purchase_units": [
+                {
+                    "amount": {
+                        "currency_code": "USD",
+                        "value": "105.00",
+                        "breakdown": {
+                            "item_total": {
                                 "currency_code": "USD",
-                                "value": "0.00"
-                            }
-                        },
-                        {
-                            "id": "2",
-                            "type": "SHIPPING",
-                            "label": "USPS Priority Shipping",
-                            "selected": "False",
-                            "amount": {
-                                "currency_code": "USD",
-                                "value": "10.00"
-                            }
-                        },
-                        {
-                            "id": "3",
-                            "amount": {
-                                "currency_code": "USD",
-                                "value": "10.00"
+                                "value": "100.00"
                             },
-                            "type": "SHIPPING",
-                            "label": "1-Day Shipping",
-                            "selected": "False"
+                            "tax_total": {
+                                "currency_code": "USD",
+                                "value": "5.00"
+                            }
                         }
-                    ]
-                },
-                "invoice_id": "67e55127139b2",
-                "description": "35345345345"
-            }
-        ]
-    }
+                    },
+                    "items": [
+                        {
+                            "name": "A Premium Item",
+                            "sku": "ABC12345",
+                            "unit_amount": {
+                                "currency_code": "USD",
+                                "value": "100.00"
+                            },
+                            "quantity": "1",
+                            "category": "PHYSICAL_GOODS"
+                        }
+                    ],
+                    "shipping": {
+                        "options": [
+                            {
+                                "id": "1",
+                                "type": "SHIPPING",
+                                "label": "Free Shipping",
+                                "selected": "True",
+                                "amount": {
+                                    "currency_code": "USD",
+                                    "value": "0.00"
+                                }
+                            },
+                            {
+                                "id": "2",
+                                "type": "SHIPPING",
+                                "label": "USPS Priority Shipping",
+                                "selected": "False",
+                                "amount": {
+                                    "currency_code": "USD",
+                                    "value": "10.00"
+                                }
+                            },
+                            {
+                                "id": "3",
+                                "amount": {
+                                    "currency_code": "USD",
+                                    "value": "10.00"
+                                },
+                                "type": "SHIPPING",
+                                "label": "1-Day Shipping",
+                                "selected": "False"
+                            }
+                        ]
+                    },
+                    "invoice_id": "67e55127139b2",
+                    "description": "35345345345"
+                }
+            ]
+        }
+            */
 
     const request_body = {
 
@@ -404,6 +409,7 @@ export default function Page() {
         });
     };
 
+    //@ts-expect-error have no idea
     async function setupFastlaneSdk(sdkInstance) {
 
         const fastlane = await sdkInstance.createFastlane();
@@ -422,11 +428,11 @@ export default function Page() {
 
         // Handle email submission
         const emailSubmitButton = document.getElementById("email-submit-button");
-        emailSubmitButton.addEventListener("click", async (e) => {
+        emailSubmitButton?.addEventListener("click", async (e) => {
             e.preventDefault();
 
             const { customerContextId } = await fastlane.identity.lookupCustomerByEmail(
-                emailInput.value,
+                email,
             );
 
             let shouldRenderFastlaneMemberExperience = false;
@@ -449,19 +455,22 @@ export default function Page() {
             }
         });
 
-
+        //@ts-expect-error have no idea
         async function renderFastlaneMemberExperience(profileData) {
             if (profileData.shippingAddress) {
+                //@ts-expect-error loaded from sdk
                 setShippingAddressDisplay(profileData.shippingAddress);
 
                 // Allow address changes
                 const changeAddressButton = document.getElementById("change-shipping-button");
+                //@ts-expect-error loaded from sdk
                 changeAddressButton.addEventListener("click", async () => {
                     const { selectedAddress, selectionChanged } =
                         await fastlane.profile.showShippingAddressSelector();
 
                     if (selectionChanged) {
                         profileData.shippingAddress = selectedAddress;
+                        //@ts-expect-error loaded from sdk
                         setShippingAddressDisplay(profileData.shippingAddress);
                     }
                 });
@@ -478,17 +487,21 @@ export default function Page() {
 
         async function renderFastlaneGuestExperience() {
             const cardTestingInfo = document.getElementById("card-testing-info");
+            {/* @ts-expect-error loaded from script */ }
             cardTestingInfo.removeAttribute("hidden");
 
             const FastlanePaymentComponent = await fastlane.FastlanePaymentComponent({});
             await FastlanePaymentComponent.render("#card-container");
             // Get payment token
+            {/* @ts-expect-error loaded from script */ }
             const { id } = await fastlanePaymentComponent.getPaymentToken();
+            console.log(`This is the id ${id}`)
         }
 
 
 
         // Create order via backend API
+        /*
         async function createOrder(paymentToken) {
             const response = await fetch("/paypal-api/checkout/orders/create", {
                 method: "POST",
@@ -522,6 +535,7 @@ export default function Page() {
 
             return await response.json();
         }
+            */
     }
     // Check payment method eligibility
     //@ts-expect-error abc
@@ -706,6 +720,7 @@ export default function Page() {
             async onApprove(data) {
                 console.log("Payment approved:", data);
                 try {
+                    //@ts-expect-error loaded from sdk
                     const orderData = await captureOrder({
                         orderId: data.orderId,
                     });
@@ -777,21 +792,14 @@ export default function Page() {
     // Setup ApplePay Button
     //@ts-expect-error abc
     async function setupApplePayButton(sdkInstance) {
-        console.log("Apple Pay Button Load")
         try {
             const paypalSdkApplePayPaymentSession =
                 await sdkInstance.createApplePayOneTimePaymentSession();
-            console.log("Apple Pay Button Load 1")
 
             const { merchantCapabilities, supportedNetworks } =
                 await paypalSdkApplePayPaymentSession.config();
 
-            console.log("Apple Pay Button Load config")
-
-            //@ts-expect-error its not null
-            document.getElementById("apple-pay-button").addEventListener("click", onClick);
-
-            console.log('button')
+            document.getElementById("apple-pay-button")?.addEventListener("click", onClick);
 
             async function onClick() {
                 const paymentRequest = {
@@ -812,28 +820,29 @@ export default function Page() {
                         type: "final",
                     },
                 };
-                console.log("Apple Pay Button Load 2")
+
                 console.log("Creating Apple Pay SDK session...");
-                //@ts-expect-error abc
+                //@ts-expect-error loaded from sdk
                 const appleSdkApplePayPaymentSession = new ApplePaySession(
                     4,
                     paymentRequest,
                 );
-                //@ts-expect-error abc
+
+                //@ts-expect-error loaded from sdk
                 appleSdkApplePayPaymentSession.onvalidatemerchant = (event) => {
                     console.log("Validating Apple Pay merchant & domain...");
                     paypalSdkApplePayPaymentSession
                         .validateMerchant({
                             validationUrl: event.validationURL,
                         })
-                        //@ts-expect-error abc
+                        //@ts-expect-error loaded from sdk
                         .then((payload) => {
                             appleSdkApplePayPaymentSession.completeMerchantValidation(
                                 payload.merchantSession,
                             );
                             console.log("Completed merchant validation");
                         })
-                        //@ts-expect-error abc
+                        //@ts-expect-error loaded from sdk
                         .catch((err) => {
                             console.log("Paypal validatemerchant error", err);
                             console.error(err);
@@ -847,18 +856,17 @@ export default function Page() {
                     });
                     console.log("Completed payment method selection");
                 };
-                //@ts-expect-error abc
+                //@ts-expect-error loaded from sdk
                 appleSdkApplePayPaymentSession.onpaymentauthorized = async (event) => {
                     try {
                         console.log("Apple Pay authorized... \nCreating PayPal order...");
-                        //@ts-expect-error abc
-                        const createdOrder = await createOrder();
+                        const createdOrder = await createOrder(request_body);
                         console.log(
                             "Confirming PayPal order with applepay payment source...",
                         );
 
                         await paypalSdkApplePayPaymentSession.confirmOrder({
-                            //@ts-expect-error abc
+                            //@ts-expect-error loaded from sdk
                             orderId: createdOrder.orderId,
                             token: event.payment.token,
                             billingContact: event.payment.billingContact,
@@ -868,9 +876,9 @@ export default function Page() {
                         console.log(
                             `Capturing order ${JSON.stringify(createdOrder, null, 2)}...`,
                         );
-                        //@ts-expect-error abc
+                        //@ts-expect-error loaded from sdk
                         const orderData = await captureOrder({
-                            //@ts-expect-error abc
+                            //@ts-expect-error loaded from sdk
                             orderId: createdOrder.orderId,
                             fundingSource: "applepay",
                             headers: { "X-CSRF-TOKEN": "<%= csrfToken %>" },
@@ -878,13 +886,13 @@ export default function Page() {
                         console.log(JSON.stringify(orderData, null, 2));
                         console.log("Completed Apple Pay SDK session with STATUS_SUCCESS...");
                         appleSdkApplePayPaymentSession.completePayment({
-                            //@ts-expect-error abc
+                            //@ts-expect-error loaded from sdk
                             status: window.ApplePaySession.STATUS_SUCCESS,
                         });
                     } catch (err) {
                         console.error(err);
                         appleSdkApplePayPaymentSession.completePayment({
-                            //@ts-expect-error abc
+                            //@ts-expect-error loaded from sdk
                             status: window.ApplePaySession.STATUS_FAILURE,
                         });
                     }
@@ -900,6 +908,7 @@ export default function Page() {
             console.error(error);
         }
     }
+
     //@ts-expect-error abc
     const messagingCallback = (data) => {
         console.log('data is: ', data.config)
@@ -926,7 +935,6 @@ export default function Page() {
             placements: ['product', 'checkout', 'cart']
         });
     }
-
 
     return (
         <>
@@ -963,6 +971,11 @@ export default function Page() {
                         defer>
 
                     </Script>
+                    <Script
+                        id='apms-v5'
+                        src="https://www.paypal.com/sdk/js?client-id=ASYzXjYB-I1obLcTb3uBd-VJnP1eCrJgykR30_RUpOFsUXQEwHYsooIERfuWCfwDXL9BdH94uwGJi5zQ&merchant-id=DVJBG3EJV2YMJ&components=buttons,payment-fields,marks,funding-eligibility&enable-funding=ideal">
+
+                    </Script>
                 </>
 
 
@@ -975,11 +988,12 @@ export default function Page() {
 
                     <div className="column">
                         <div>
-                            <paypal-button id="branded-buttons" type="buynow" ></paypal-button>
+                            {/* @ts-expect-error loaded from script */}
+                            <paypal-button id="branded-buttons" type="buynow"></paypal-button>
                         </div>
                         <div id="paypal-message">
-                            <paypal-message>
-                            </paypal-message>
+                            {/* @ts-expect-error loaded from script */}
+                            <paypal-message></paypal-message>
                         </div>
 
                     </div>
@@ -1006,34 +1020,42 @@ export default function Page() {
 
                 <div className="columns">
                     <div className="column">
-                        <paypal-pay-later-button
-                            id="paylater-button"
-                            hidden
-                        ></paypal-pay-later-button>
+                        {/* @ts-expect-error loaded from script */}
+                        <paypal-pay-later-button id="paylater-button"></paypal-pay-later-button>
                     </div>
                 </div>
 
                 <div className="columns">
                     <div className="column">
-                        <div  >
+                        <div>
+                            {/* @ts-expect-error loaded from script */}
                             <paypal-button id="vault-button" type="subscribe"></paypal-button>
                         </div>
                     </div>
                 </div>
-
-                <div className="columns">
-                    <div className="column">
-                        <venmo-button id="venmo-button"></venmo-button>
-                    </div>
-                </div>
-
                 <div className="columns">
                     <div className="column">
                         <div id="apple-apple-pay-button-container">
+                            {/* @ts-expect-error loaded from script */}
                             <apple-pay-button id="apple-pay-button" buttonstyle="black" type="buy" locale="en"></apple-pay-button>
                         </div>
                     </div>
                 </div>
+
+                <div className="columns">
+                    <div className="column">
+                        {/* @ts-expect-error loaded from script */}
+                        <venmo-button id="venmo-button"></venmo-button>
+                    </div>
+                </div>
+
+                <div className='columns'>
+                    <div className="column" id='ideal-mark'>
+
+                    </div>
+                </div>
+
+
                 {apm ?
 
                     <>
