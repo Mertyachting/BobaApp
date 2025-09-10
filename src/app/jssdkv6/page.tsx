@@ -993,9 +993,14 @@ export default function Page() {
                     <>
                         <div className="container">
                             <h1 className='title is-2'>JSSDK V6 Test Page</h1>
-                            <div className="columns is-2">
- <h1>SDK Token: {sdkTokens.data}</h1>
-                    <button className='button' onClick={() => sdkTokens.refetch()}>refresh token</button>
+                            <div className="columns">
+                                <div className="column is-four-fifths">
+                                    <h1>SDK Token: 
+                                        <textarea className='textarea is-large'>{JSON.stringify(sdkTokens.data)}
+                                            </textarea>
+                                    </h1>
+                                    <button className='button' onClick={() => sdkTokens.refetch()}>refresh token</button>
+                                </div>
                             </div>
 
                             
