@@ -40,7 +40,7 @@ export default function Page() {
     useEffect(() => {
         if (window.paypal) {
             window.location.reload()
-        } else if (window.paypal) {
+        } else if (window.paypal?.createInstance) {
             setIsLoaded(true)
 
         } else (
