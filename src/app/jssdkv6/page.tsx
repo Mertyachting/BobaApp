@@ -993,15 +993,24 @@ export default function Page() {
                     <>
                         <div className="container">
                             <h1 className='title is-2'>JSSDK V6 Test Page</h1>
-                            <div className="columns">
+                      
+                            {sdkTokens.isRefetching ? <>Loading <Circle /></> : <>
+                                  <div className="columns">
                                 <div className="column">
                                     <h1>SDK Token: 
-                                        <textarea className='textarea is-large'>{JSON.stringify(sdkTokens.data)}
+                                        <div className="control">
+                                            <textarea  className='textarea' rows={6} readOnly>
+                                                    {sdkTokens.data}
                                             </textarea>
+                                        </div>
+
+                                        
                                     </h1>
                                     <button className='button' onClick={() => sdkTokens.refetch()}>refresh token</button>
                                 </div>
                             </div>
+                            
+                            </>}
 
                             
                             <div className="columns">
