@@ -9,7 +9,7 @@ const merchant_id = process.env.NEXT_PUBLIC_MERCHANT_ID ? process.env.NEXT_PUBLI
 
 export default function Checkout() {
     const initialOptions = {
-        'client-id': client_id,
+        clientId: client_id,
         currency: "USD",
         intent: "capture",
         merchantId: merchant_id,

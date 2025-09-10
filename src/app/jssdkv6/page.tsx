@@ -987,6 +987,8 @@ export default function Page() {
                         defer>
                     </Script>
 
+                    <h1>SDK Token: {sdkTokens.data}</h1>
+                    <button className='button' onClick={() => sdkTokens.refetch()}>refresh token</button>
 
                     <>
                         <div className="container">
