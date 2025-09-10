@@ -40,6 +40,7 @@ export default function Page() {
     useEffect(() => {
         if (window.paypal) {
             window.location.reload()
+            //@ts-expect-error abc
         } else if (window.paypal?.createInstance) {
             setIsLoaded(true)
 
@@ -987,13 +988,19 @@ export default function Page() {
                         defer>
                     </Script>
 
-                    <h1>SDK Token: {sdkTokens.data}</h1>
-                    <button className='button' onClick={() => sdkTokens.refetch()}>refresh token</button>
+                    
 
                     <>
                         <div className="container">
                             <h1 className='title is-2'>JSSDK V6 Test Page</h1>
+                            <div className="columns is-2">
+ <h1>SDK Token: {sdkTokens.data}</h1>
+                    <button className='button' onClick={() => sdkTokens.refetch()}>refresh token</button>
+                            </div>
+
+                            
                             <div className="columns">
+                               
 
                                 <div className="column">
                                     <div>
