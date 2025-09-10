@@ -994,7 +994,7 @@ export default function Page() {
                         <div className="container">
                             <h1 className='title is-2'>JSSDK V6 Test Page</h1>
                             <div className="columns">
-                                <div className="column is-four-fifths">
+                                <div className="column">
                                     <h1>SDK Token: 
                                         <textarea className='textarea is-large'>{JSON.stringify(sdkTokens.data)}
                                             </textarea>
