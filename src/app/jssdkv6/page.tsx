@@ -5,7 +5,7 @@ import { Circle } from 'lucide-react';
 import branded from './../payloads/vanilla_branded.json'
 import alipay from './../payloads/alipay.json'
 import setupVaultToken from './../payloads/setup_vault_token.json'
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { generateUUID } from "@/app/helpers/helpers";
 
 async function createOrder(payload: object) {
@@ -37,6 +37,17 @@ async function createOrder(payload: object) {
 
 export default function Page() {
 
+    useEffect(() => {
+        if (window.paypal) {
+            window.location.reload()
+        } else if (window.paypal) {
+            setIsLoaded(true)
+        } else (
+            console.log('The rabbit hole')
+        )
+    }, [])
+
+    const [isLoaded, setIsLoaded] = useState(false);
     const queryClient = useQueryClient()
     const clientToken = queryClient.getQueryData(['sdkToken']);
     const [apm, setApms] = useState(false)
@@ -59,8 +70,6 @@ export default function Page() {
         staleTime: 9000
     })
 
-    /*
-
     const user_data = async () => {
         const res = await fetch("api/user_agent",
             { method: 'GET' }
@@ -68,130 +77,128 @@ export default function Page() {
         const data = await res.json();
         return data;
     }
-    
-        const userData = useQuery({
-            queryKey: ['userAgent'],
-            queryFn: user_data,
-            staleTime: 9000
-        })
-            
-    
-        console.log()
-    
-        const appswitch_body = {
-            intent: "CAPTURE",
-            paymentSource: {
-                paypal: {
-                    experienceContext: {
-                        shippingPreference: "NO_SHIPPING",
-                        userAction: "CONTINUE",
-                        returnUrl: "http://localhost:3000/jssdkv6",
-                        cancelUrl: "http://localhost:3000/jssdkv6",
-                    },
+
+    const userData = useQuery({
+        queryKey: ['userAgent'],
+        queryFn: user_data,
+        staleTime: 9000
+    })
+
+    /*
+    const appswitch_body = {
+        intent: "CAPTURE",
+        paymentSource: {
+            paypal: {
+                experienceContext: {
+                    shippingPreference: "NO_SHIPPING",
+                    userAction: "CONTINUE",
+                    returnUrl: "http://localhost:3000/jssdkv6",
+                    cancelUrl: "http://localhost:3000/jssdkv6",
                 },
             },
-            purchaseUnits: [
-                {
-                    amount: {
-                        currencyCode: "USD",
-                        value: "10.00",
-                        breakdown: {
-                            itemTotal: {
-                                currencyCode: "USD",
-                                value: "10.00",
-                            },
+        },
+        purchaseUnits: [
+            {
+                amount: {
+                    currencyCode: "USD",
+                    value: "10.00",
+                    breakdown: {
+                        itemTotal: {
+                            currencyCode: "USD",
+                            value: "10.00",
                         },
                     },
                 },
-            ],
-        };
-    
-        const shipping_body = {
-            "intent": "CAPTURE",
-            "payment_source": {
-                "paypal": {
-                    "experience_context": {
-                        "shipping_preference": "GET_FROM_FILE",
-                        "user_action": "PAY_NOW",
-                        "locale": "en-US",
-                        "brand_name": "Your Name Here",
-                        "return_url": "https://example.com/return",
-                        "cancel_url": "https://example.com/cancel",
-                        "order_update_callback_config": {
-                            "callback_events": ["SHIPPING_ADDRESS"],
-                            "callback_url": "https://webhooklistenerorco2024.onrender.com/callback/paypal"
-                        }
+            },
+        ],
+    };
+
+    const shipping_body = {
+        "intent": "CAPTURE",
+        "payment_source": {
+            "paypal": {
+                "experience_context": {
+                    "shipping_preference": "GET_FROM_FILE",
+                    "user_action": "PAY_NOW",
+                    "locale": "en-US",
+                    "brand_name": "Your Name Here",
+                    "return_url": "https://example.com/return",
+                    "cancel_url": "https://example.com/cancel",
+                    "order_update_callback_config": {
+                        "callback_events": ["SHIPPING_ADDRESS"],
+                        "callback_url": "https://webhooklistenerorco2024.onrender.com/callback/paypal"
                     }
                 }
-            },
-            "purchase_units": [
-                {
-                    "amount": {
-                        "currency_code": "USD",
-                        "value": "105.00",
-                        "breakdown": {
-                            "item_total": {
-                                "currency_code": "USD",
-                                "value": "100.00"
-                            },
-                            "tax_total": {
-                                "currency_code": "USD",
-                                "value": "5.00"
-                            }
+            }
+        },
+        "purchase_units": [
+            {
+                "amount": {
+                    "currency_code": "USD",
+                    "value": "105.00",
+                    "breakdown": {
+                        "item_total": {
+                            "currency_code": "USD",
+                            "value": "100.00"
+                        },
+                        "tax_total": {
+                            "currency_code": "USD",
+                            "value": "5.00"
                         }
-                    },
-                    "items": [
+                    }
+                },
+                "items": [
+                    {
+                        "name": "A Premium Item",
+                        "sku": "ABC12345",
+                        "unit_amount": {
+                            "currency_code": "USD",
+                            "value": "100.00"
+                        },
+                        "quantity": "1",
+                        "category": "PHYSICAL_GOODS"
+                    }
+                ],
+                "shipping": {
+                    "options": [
                         {
-                            "name": "A Premium Item",
-                            "sku": "ABC12345",
-                            "unit_amount": {
+                            "id": "1",
+                            "type": "SHIPPING",
+                            "label": "Free Shipping",
+                            "selected": "True",
+                            "amount": {
                                 "currency_code": "USD",
-                                "value": "100.00"
-                            },
-                            "quantity": "1",
-                            "category": "PHYSICAL_GOODS"
-                        }
-                    ],
-                    "shipping": {
-                        "options": [
-                            {
-                                "id": "1",
-                                "type": "SHIPPING",
-                                "label": "Free Shipping",
-                                "selected": "True",
-                                "amount": {
-                                    "currency_code": "USD",
-                                    "value": "0.00"
-                                }
-                            },
-                            {
-                                "id": "2",
-                                "type": "SHIPPING",
-                                "label": "USPS Priority Shipping",
-                                "selected": "False",
-                                "amount": {
-                                    "currency_code": "USD",
-                                    "value": "10.00"
-                                }
-                            },
-                            {
-                                "id": "3",
-                                "amount": {
-                                    "currency_code": "USD",
-                                    "value": "10.00"
-                                },
-                                "type": "SHIPPING",
-                                "label": "1-Day Shipping",
-                                "selected": "False"
+                                "value": "0.00"
                             }
-                        ]
-                    },
-                    "invoice_id": "67e55127139b2",
-                    "description": "35345345345"
-                }
-            ]
-        }
-            */
+                        },
+                        {
+                            "id": "2",
+                            "type": "SHIPPING",
+                            "label": "USPS Priority Shipping",
+                            "selected": "False",
+                            "amount": {
+                                "currency_code": "USD",
+                                "value": "10.00"
+                            }
+                        },
+                        {
+                            "id": "3",
+                            "amount": {
+                                "currency_code": "USD",
+                                "value": "10.00"
+                            },
+                            "type": "SHIPPING",
+                            "label": "1-Day Shipping",
+                            "selected": "False"
+                        }
+                    ]
+                },
+                "invoice_id": "67e55127139b2",
+                "description": "35345345345"
+            }
+        ]
+    }
+        */
 
     const request_body = {
 
@@ -272,14 +279,14 @@ export default function Page() {
                         "callback_events": ["SHIPPING_ADDRESS"],
                         "callback_url": "https://10.225.155.159:3000/api/shipping-callback"
                     },
-                    *//*
+                    */
                     "app_switch_context": {
                         "mobile_web": {
                             "return_flow": "AUTO",
                             "buyer_user_agent": userData.data?.network?.userAgent
                         }
                     }
-                        */
+
                 }
             }
         }
@@ -352,44 +359,49 @@ export default function Page() {
     // Main orchestrator function
     const paypal_checkout = async () => {
         try {
-            await clientToken;
-            const sdkInstance = await initializePayPalSDK();
-            const eligibleMethods = await getEligiblePaymentMethods(sdkInstance);
-            await initiateMessages(sdkInstance)
-            const fastlane = await sdkInstance.createFastlane();
+            if (window.paypal) {
+                console.log('paypal is here')
+                await clientToken;
+                console.log('client_token:', sdkTokens.data)
+                const sdkInstance = await initializePayPalSDK();
+                const eligibleMethods = await getEligiblePaymentMethods(sdkInstance);
+                await initiateMessages(sdkInstance)
+                const fastlane = await sdkInstance.createFastlane();
 
 
-            if (eligibleMethods.isPayPalEligible) {
-                await setupPayPalButton(sdkInstance);
+                if (eligibleMethods.isPayPalEligible) {
+                    await setupPayPalButton(sdkInstance);
+                }
+
+                if (eligibleMethods.isVenmoEligible) {
+                    await setupVenmoButton(sdkInstance);
+                }
+                await setupApplePayButton(sdkInstance);
+                await setupVaultButton(sdkInstance);
+
+                if (eligibleMethods.isPayLaterEligible) {
+                    const paylaterPaymentMethodDetails =
+                        eligibleMethods.payLaterDetails;
+                    setupPayLaterButton(sdkInstance, paylaterPaymentMethodDetails);
+                }
+
+                if (fastlane) {
+                    await setupFastlaneSdk(sdkInstance);
+                    console.log('fastlane available')
+                }
+
+                console.log("SDK initialized successfully:", sdkInstance);
+
             }
 
-            if (eligibleMethods.isVenmoEligible) {
-                await setupVenmoButton(sdkInstance);
-            }
-            await setupApplePayButton(sdkInstance);
-            await setupVaultButton(sdkInstance);
-
-            if (eligibleMethods.isPayLaterEligible) {
-                const paylaterPaymentMethodDetails =
-                    eligibleMethods.payLaterDetails;
-                setupPayLaterButton(sdkInstance, paylaterPaymentMethodDetails);
-            }
-
-            if (fastlane) {
-                await setupFastlaneSdk(sdkInstance);
-                console.log('fastlane available')
-            }
-
-            console.log("SDK initialized successfully:", sdkInstance);
         } catch (error) {
             console.error("Error initializing PayPal checkout:", error);
         }
     };
 
-
-
     // Initialize PayPal SDK
     const initializePayPalSDK = async () => {
+        await clientToken
         //@ts-expect-error loaded from the script not from the package
         return await window.paypal.createInstance({
             clientToken,
@@ -897,9 +909,9 @@ export default function Page() {
                         });
                     }
                 };
-
-                appleSdkApplePayPaymentSession.oncancel = () => {
-                    console.log("Apple Pay Canceled!");
+                //@ts-expect-error getting an error
+                appleSdkApplePayPaymentSession.oncancel = (e) => {
+                    console.log("Apple Pay Canceled!", e);
                 };
 
                 appleSdkApplePayPaymentSession.begin();
@@ -948,12 +960,14 @@ export default function Page() {
                 </>)
                 : <> </>
             }
-            {sdkTokens.data ?
 
+            {sdkTokens.data ?
                 <>
                     <Script
                         id='loadv6'
+                        key={'v6'}
                         src='https://www.sandbox.paypal.com/web-sdk/v6/core'
+                        strategy='lazyOnload'
                         onLoad={async () => {
                             await paypal_checkout();
                         }
@@ -969,140 +983,147 @@ export default function Page() {
                         src='https://www.paypalobjects.com/merchant-library/merchant-configurator.js'
                         onLoad={() => messagingConfig()}
                         defer>
-
                     </Script>
-                    <Script
-                        id='apms-v5'
-                        src="https://www.paypal.com/sdk/js?client-id=ASYzXjYB-I1obLcTb3uBd-VJnP1eCrJgykR30_RUpOFsUXQEwHYsooIERfuWCfwDXL9BdH94uwGJi5zQ&merchant-id=DVJBG3EJV2YMJ&components=buttons,payment-fields,marks,funding-eligibility&enable-funding=ideal">
 
-                    </Script>
-                </>
-
-
-
-                : <><h1>NO ACCESS TOKEN FOUND</h1></>}
-
-            <div className="container">
-                <h1 className='title is-2'>JSSDK V6 Test Page</h1>
-                <div className="columns">
-
-                    <div className="column">
-                        <div>
-                            {/* @ts-expect-error loaded from script */}
-                            <paypal-button id="branded-buttons" type="buynow"></paypal-button>
-                        </div>
-                        <div id="paypal-message">
-                            {/* @ts-expect-error loaded from script */}
-                            <paypal-message></paypal-message>
-                        </div>
-
-                    </div>
-
-                    <div className="column">
-                        <label id="apms" className="checkbox">
-                            <input type="checkbox" checked={apm} onChange={apmHandler} />
-                            Alternative Payment Methods
-                        </label>
-                        <div>
-                            <label id="Vault without purchase" className="checkbox">
-                                <input type="checkbox" checked={vault} onChange={vaultHandler} />
-                                Vault without purchase
-                            </label>
-                        </div>
-                        <div>
-                            <label id="Vault with purchase" className="checkbox">
-                                <input type="checkbox" checked={vaultPurchase} onChange={vaultPurchaseHandler} />
-                                Vault with purchase
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="columns">
-                    <div className="column">
-                        {/* @ts-expect-error loaded from script */}
-                        <paypal-pay-later-button id="paylater-button"></paypal-pay-later-button>
-                    </div>
-                </div>
-
-                <div className="columns">
-                    <div className="column">
-                        <div>
-                            {/* @ts-expect-error loaded from script */}
-                            <paypal-button id="vault-button" type="subscribe"></paypal-button>
-                        </div>
-                    </div>
-                </div>
-                <div className="columns">
-                    <div className="column">
-                        <div id="apple-apple-pay-button-container">
-                            {/* @ts-expect-error loaded from script */}
-                            <apple-pay-button id="apple-pay-button" buttonstyle="black" type="buy" locale="en"></apple-pay-button>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="columns">
-                    <div className="column">
-                        {/* @ts-expect-error loaded from script */}
-                        <venmo-button id="venmo-button"></venmo-button>
-                    </div>
-                </div>
-
-                <div className='columns'>
-                    <div className="column" id='ideal-mark'>
-
-                    </div>
-                </div>
-
-
-                {apm ?
 
                     <>
-                        <div className="columns">
-                            <div className="column">
-                                <button className="button is-primary" onClick={() => createOrder(alipay)}>AliPay</button>
+                        <div className="container">
+                            <h1 className='title is-2'>JSSDK V6 Test Page</h1>
+                            <div className="columns">
+
+                                <div className="column">
+                                    <div>
+                                        {/* @ts-expect-error loaded from script */}
+                                        <paypal-button id="branded-buttons" type="buynow"></paypal-button>
+                                    </div>
+                                    <div id="paypal-message">
+                                        {/* @ts-expect-error loaded from script */}
+                                        <paypal-message></paypal-message>
+                                    </div>
+
+                                </div>
+
+                                <div className="column">
+                                    <label id="apms" className="checkbox">
+                                        <input type="checkbox" checked={apm} onChange={apmHandler} />
+                                        Alternative Payment Methods
+                                    </label>
+                                    <div>
+                                        <label id="Vault without purchase" className="checkbox">
+                                            <input type="checkbox" checked={vault} onChange={vaultHandler} />
+                                            Vault without purchase
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <label id="Vault with purchase" className="checkbox">
+                                            <input type="checkbox" checked={vaultPurchase} onChange={vaultPurchaseHandler} />
+                                            Vault with purchase
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+
+                            <div className="columns">
+                                <div className="column">
+                                    {/* @ts-expect-error loaded from script */}
+                                    <paypal-pay-later-button id="paylater-button"></paypal-pay-later-button>
+                                </div>
+                            </div>
+
+                            <div className="columns">
+                                <div className="column">
+                                    <div>
+                                        {/* @ts-expect-error loaded from script */}
+                                        <paypal-button id="vault-button" type="subscribe"></paypal-button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="columns">
+                                <div className="column">
+                                    <div id="apple-apple-pay-button-container">
+                                        {/* @ts-expect-error loaded from script */}
+                                        <apple-pay-button id="apple-pay-button" buttonstyle="black" type="buy" locale="en"></apple-pay-button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="columns">
+                                <div className="column">
+                                    {/* @ts-expect-error loaded from script */}
+                                    <venmo-button id="venmo-button"></venmo-button>
+                                </div>
+                            </div>
+
+                            <div className='columns'>
+                                <div className="column" id='ideal-mark'>
+
+                                </div>
+                            </div>
+
+
+
+
+
+                            {apm ?
+
+                                <>
+                                    <div className="columns">
+                                        <div className="column">
+                                            <button className="button is-primary" onClick={() => createOrder(alipay)}>AliPay</button>
+                                        </div>
+                                    </div>
+                                </>
+
+                                : <>
+                                </>}
+
+                            <div id="fastLane-form">
+
+                                <form id="email-form">
+                                    <input type="email" id="email-input" />
+                                    <div id="watermark-container"></div>
+                                    <button id="email-submit-button">Submit</button>
+                                </form>
+
+
+                                <div id="card-container"></div>
+                                <div id="payment-container"></div>
+
+
+                                <div id="shipping-display-container" hidden></div>
+                                <button id="change-shipping-button" hidden>Change Shipping Address</button>
+
+
+                                <button id="submit-button" hidden>Submit Order</button>
+
+
+                                <p id="card-testing-info" hidden>
+                                    For more info on testing cards with PayPal, see
+                                    <a href="https://developer.paypal.com/tools/sandbox/card-testing/">
+                                        https://developer.paypal.com/tools/sandbox/card-testing/
+                                    </a>
+                                </p>
+                            </div>
+
+                            <div className="columns">
+                                <div className="column has-background-light">
+                                    <div id="messaging-configurator"></div>
+                                </div>
+                            </div>
+                        </div >
+
                     </>
 
-                    : <>
-                    </>}
+                </>
 
-                <div id="fastLane-form">
-
-                    <form id="email-form">
-                        <input type="email" id="email-input" />
-                        <div id="watermark-container"></div>
-                        <button id="email-submit-button">Submit</button>
-                    </form>
+                : <></>
+            }
 
 
-                    <div id="card-container"></div>
-                    <div id="payment-container"></div>
 
 
-                    <div id="shipping-display-container" hidden></div>
-                    <button id="change-shipping-button" hidden>Change Shipping Address</button>
-
-
-                    <button id="submit-button" hidden>Submit Order</button>
-
-
-                    <p id="card-testing-info" hidden>
-                        For more info on testing cards with PayPal, see
-                        <a href="https://developer.paypal.com/tools/sandbox/card-testing/">
-                            https://developer.paypal.com/tools/sandbox/card-testing/
-                        </a>
-                    </p>
-                </div>
-
-                <div className="columns">
-                    <div className="column has-background-light">
-                        <div id="messaging-configurator"></div>
-                    </div>
-                </div>
-            </div >
         </>
+
+
     )
 }
