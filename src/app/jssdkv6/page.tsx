@@ -42,6 +42,7 @@ export default function Page() {
             window.location.reload()
         } else if (window.paypal) {
             setIsLoaded(true)
+
         } else (
             console.log('The rabbit hole')
         )
@@ -358,6 +359,7 @@ export default function Page() {
 
     // Main orchestrator function
     const paypal_checkout = async () => {
+        console.log(isLoaded)
         try {
             if (window.paypal) {
                 console.log('paypal is here')
