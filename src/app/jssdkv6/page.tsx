@@ -6,9 +6,19 @@ import branded from './../payloads/vanilla_branded.json'
 import alipay from './../payloads/alipay.json'
 import setupVaultToken from './../payloads/setup_vault_token.json'
 import { useEffect, useState } from 'react';
-import { generateUUID } from "@/app/helpers/helpers";
+import { generateUUID, getAccessToken } from "@/app/helpers/helpers";
+import { NextResponse } from 'next/server';
 
-async function createOrder(payload: object) {
+
+
+
+
+
+export default function Page() {
+
+    async function createOrder(payload: object) {
+    const access_token = await getAccessToken();
+    console.log('access_token:', access_token)
     console.log('CLICK')
     console.log(typeof (payload))
     try {
@@ -16,6 +26,7 @@ async function createOrder(payload: object) {
             method: "POST",
             mode: "same-origin",
             headers: {
+                "authorization": `Bearer A21AAL4iUIMhSMNxFkGpDEQLy2u_Eq2z1hI6sNOTcINoVfyifIgFsDSasazTx_mKpQRwAjbnGmDe2Fjzkuph9beamsUxd6cvQ`,
                 "Content-Type": "application/json",
             },
             // use the "body" param to optionally pass additional order information
@@ -33,9 +44,25 @@ async function createOrder(payload: object) {
 
 }
 
+    async function GetOrder() {
+    const base = 'https://api-m.sandbox.paypal.com';
+    const url = `${base}/v2/checkout/orders/3LN68330HC657403H`; // Change endpoint as needed
 
-
-export default function Page() {
+    try {
+        const response = await fetch(url, {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer A21AALnXNVtr82ga5Sz8vpbylPx4EsNCQ2vKLsWr8CCehG3Uixolcxckr2_NMF2d1V4hPfeqg_WgPrDgxqQUNX5EGVw9-jODg`,
+            },
+            method: "GET"
+        });
+        const data = await response.json();
+        console.log(data);
+        return NextResponse.json(data);
+    } catch (e) {
+        return NextResponse.json('error: ' + e);
+    }
+}
 
     useEffect(() => {
         if (window.paypal) {
@@ -679,6 +706,7 @@ export default function Page() {
         const vaultButton = document.querySelector('#vault-button');
 
         const onClick = async () => {
+
             try {
                 await paymentSession.start(
                     { presentationMode: "auto" },
@@ -706,7 +734,7 @@ export default function Page() {
 
                 const { redirectURL } = await paymentSession.start(
                     {
-                        presentationMode: "direct-app-switch",
+                        presentationMode: "auto",
                         autoRedirect: {
                             enabled: true,
                         }
@@ -1129,6 +1157,10 @@ export default function Page() {
                                     </a>
                                 </p>
                             </div>
+
+                            <button className="button"onClick={() => GetOrder()}>
+GET ORDER
+                            </button>
 
                             <div className="columns">
                                 <div className="column has-background-light">

@@ -20,9 +20,9 @@ export async function POST() {
         const res = await fetch(url, {
             method: "POST",
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded',
                 'Authorization': `Basic ${auth}`,
-                //'PayPal-Auth-Assertion': 'eyJhbGciOiJub25lIn0.eyJpc3MiOiJBWTN6Vkdndkl6eWtJVkR3X0c5WkROb0htaURiTVlZQzVtMXFkclRfNV84WnRBVkZOdE5OYnY0WEtmWFJHVkVtU1BTcGEzMHVHTTFBbmZrTyIsInBheWVyX2lkIjoiNEVVUFVVV0JVTFpLUyJ9.'
+       
             },
             body: new URLSearchParams({
                 'grant_type': 'client_credentials',

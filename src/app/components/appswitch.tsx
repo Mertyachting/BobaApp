@@ -1,6 +1,6 @@
 "use client";
 
-/*
+
 import React from "react";
 
 import { usePayPalButtons } from "@paypal/react-paypal-js";
@@ -25,13 +25,12 @@ const merchant_id = process.env.NEXT_PUBLIC_MERCHANT_ID ? process.env.NEXT_PUBLI
 
 export default function AppSwitch() {
 
-    /*
-    let IsReadyToPayRequest = { allowedPaymentMethods: ['CARD', 'TOKENIZED_CARD'] }
+    const IsReadyToPayRequest = { allowedPaymentMethods: ['CARD', 'TOKENIZED_CARD'] }
 
     function onGooglePayLoaded() {
         //@ts-expect-error ...
         const paymentsClient = new window.google.payments.api.PaymentsClient({ environment: 'TEST' });
-
+//@ts-expect-error dont know the type yet
         paymentsClient.isReadyToPay(IsReadyToPayRequest).then(function (response) {
             console.log(response.result)
             if (response.result) {
@@ -45,15 +44,17 @@ export default function AppSwitch() {
 
     function addGooglePayButton() {
         console.log("G-Pay Button function initiated")
+        //@ts-expect-error loaded from library 
         const paymentsClient = new window.google.payments.api.PaymentsClient({ environment: 'TEST' });
         const button = paymentsClient.createButton({
             onClick: console.log("CLICKER"),
             allowedPaymentMethods: ['CARD', 'TOKENIZED_CARD']
         });
+        //@ts-expect-error loaded from library 
         document.getElementById('googlepay').appendChild(button);
     }
 
-
+/*
     const request_body = {
         "intent": "CAPTURE",
         "payment_source": {
@@ -116,6 +117,7 @@ export default function AppSwitch() {
             }
         }]
     }
+        */
 
     const payload = {
         "intent": "CAPTURE",
@@ -194,7 +196,7 @@ export default function AppSwitch() {
                 },
                 // use the "body" param to optionally pass additional order information
                 // like product ids and quantities
-                body: JSON.stringify(request_body),
+                body: JSON.stringify(payload),
             })
             const data = await respone.json();
             if (data.id) {
@@ -331,11 +333,6 @@ export default function AppSwitch() {
             </div >
         </>
     );
-    */
-    return (
-        <>
-            <h1>Hi I am AppSwitch</h1>
-        </>
-    )
+
 
 };

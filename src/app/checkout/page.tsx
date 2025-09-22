@@ -16,7 +16,7 @@ export default function Checkout() {
         buyerCountry: 'US',
         'data-partner-attribution-id': "Boba",
         components: ['buttons', 'googlepay'],
-        'enable-funding': 'venmo'
+        'enable-funding': ['venmo', 'paylater']
     };
 
     const pathname = usePathname()
