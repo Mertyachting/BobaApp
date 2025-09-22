@@ -1,7 +1,6 @@
 'use client'
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import AppSwitch from '../components/appswitch';
-import { usePathname } from 'next/navigation';
 
 
 const client_id = process.env.NEXT_PUBLIC_CLIENT_ID ? process.env.NEXT_PUBLIC_CLIENT_ID : 'test';
@@ -19,23 +18,13 @@ export default function Checkout() {
         'enable-funding': ['venmo', 'paylater']
     };
 
-    const pathname = usePathname()
-
-    const needsV5Provider = () => {
-        return pathname === '/' || pathname === '/checkout'; // your v5 pages
-    };
-
-    if (needsV5Provider()) {
-        <PayPalScriptProvider
-            key={pathname}
+ 
+    return (
+        <>
+             <PayPalScriptProvider
             options={initialOptions}>
             <AppSwitch />
         </PayPalScriptProvider>
-    }
-
-    return (
-        <>
-            <AppSwitch />
 
         </>
     )
