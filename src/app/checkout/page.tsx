@@ -1,5 +1,5 @@
 'use client'
-import { PayPalScriptProvider } from '@paypal/paypal-js-root/packages/react-paypal-js/src/components/PayPalScriptProvider';
+import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import AppSwitch from '../components/appswitch';
 
 

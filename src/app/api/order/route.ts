@@ -7,7 +7,7 @@ import { generateUUID } from "@/app/helpers/helpers";
 
 const access_token = await getAccessToken();
 
-const jwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBU1l6WGpZQi1JMW9iTGNUYjN1QmQtVkpuUDFlQ3JKZ3lrUjMwX1JVcE9Gc1VYUUV3SFlzb29JRVJmdVdDZndEWEw5QmRIOTR1d0dKaTV6USIsInBheWVyX2lkIjoiRFZKQkczRUpWMllNSiIsImlhdCI6MTc0Nzc0MzA2MH0.J_eklbH6MPrrhn6BNeWLEYVAkOYOe_zsPJHKd9BUajM'
+// const jwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJBU1l6WGpZQi1JMW9iTGNUYjN1QmQtVkpuUDFlQ3JKZ3lrUjMwX1JVcE9Gc1VYUUV3SFlzb29JRVJmdVdDZndEWEw5QmRIOTR1d0dKaTV6USIsInBheWVyX2lkIjoiRFZKQkczRUpWMllNSiIsImlhdCI6MTc0Nzc0MzA2MH0.J_eklbH6MPrrhn6BNeWLEYVAkOYOe_zsPJHKd9BUajM'
 
 
 
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
                     //"PayPal-Mock-Response": '{"mock_application_codes": "PERMISSION_DENIED"}',
                     // "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
                     "PayPal-Partner-Attribution-Id": "Xúr-PPCP",
-                    "PayPal-Auth-Assertion": jwtToken,
+                    //"PayPal-Auth-Assertion": jwtToken,
                     "PayPal-Request-Id": generateUUID()
                 },
                 method: "POST",

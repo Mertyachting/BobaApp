@@ -5,8 +5,8 @@ import { Circle } from 'lucide-react';
 import branded from './../payloads/vanilla_branded.json'
 import alipay from './../payloads/alipay.json'
 import setupVaultToken from './../payloads/setup_vault_token.json'
-import { useEffect, useState } from 'react';
-import { generateUUID, getAccessToken } from "@/app/helpers/helpers";
+import { useEffect, useRef, useState } from 'react';
+import { generateUUID } from "@/app/helpers/helpers";
 import { NextResponse } from 'next/server';
 
 
@@ -16,10 +16,10 @@ import { NextResponse } from 'next/server';
 
 export default function Page() {
 
+
+
+    //Create Order
     async function createOrder(payload: object) {
-    const access_token = await getAccessToken();
-    console.log('access_token:', access_token)
-    console.log('CLICK')
     console.log(typeof (payload))
     try {
         const respone = await fetch(`/api/order`, {
@@ -41,8 +41,22 @@ export default function Page() {
         console.log("create order failed " + e);
 
     }
-
 }
+
+    //@ts-expect-error...
+    async function captureOrder(data) {
+
+        await fetch(`/api/capture`, {
+            mode: 'same-origin',
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                orderID: data.orderID
+            })
+        })
+    }
 
     async function GetOrder() {
     const base = 'https://api-m.sandbox.paypal.com';
@@ -84,7 +98,14 @@ export default function Page() {
     const [vaultPurchase, setVaultPurchase] = useState(false);
     const [layout, setLayout] = useState('');
     const email = 'sb-srp47a45272330@personal.example.com';
+    const [paymentFlow, setPaymentFlow] = useState('auto');
+    const paymentFlowRef = useRef(paymentFlow);
 
+        useEffect(() => {
+    paymentFlowRef.current = paymentFlow;
+}, [paymentFlow]);
+
+    //GET SDK TOKEN
     const sdk_token = async () => {
         const res = await fetch("api/new_access_token",
             { method: 'POST' }
@@ -112,6 +133,18 @@ export default function Page() {
         queryFn: user_data,
         staleTime: 9000
     })
+
+        const applepay_request = {
+        intent: "CAPTURE",
+        purchase_units: [
+            {
+                amount: {
+                    currency_code: "USD",
+                    value: "100.00"
+                },
+            },
+        ],
+    };
 
     /*
     const appswitch_body = {
@@ -228,6 +261,24 @@ export default function Page() {
         ]
     }
         */
+
+    const cc_payment = {
+  "intent": "CAPTURE",
+  "purchase_units": [
+    { "amount": { "currency_code": "USD", "value": "100.00" } }
+  ],
+  "payment_source": {
+    "card": {
+          "attributes": {
+        "verification": { "method": "SCA_ALWAYS" } // or SCA_WHEN_REQUIRED
+      },
+      "experience_context": {
+        "return_url": "https://qlpp.vercel.app/success",
+        "cancel_url": "https://qlpp.vercel.app/success"
+      }
+    }
+  }
+}
 
     const request_body = {
 
@@ -420,6 +471,10 @@ export default function Page() {
                     console.log('fastlane available')
                 }
 
+                if(eligibleMethods.isCardFieldsEligible) {
+                    await setupCardFields(sdkInstance);
+                }
+
                 console.log("SDK initialized successfully:", sdkInstance);
 
             }
@@ -435,6 +490,7 @@ export default function Page() {
         //@ts-expect-error loaded from the script not from the package
         return await window.paypal.createInstance({
             clientToken,
+            merchantId: process.env.NEXT_PUBLIC_MERCHANT_ID,
             clientMetadataId: generateUUID(),
             components: [
                 "paypal-payments",
@@ -442,12 +498,14 @@ export default function Page() {
                 "paypal-messages",
                 "applepay-payments",
                 "googlepay-payments",
-                "fastlane"
+                "fastlane",
+                "card-fields"
             ],
             locale: "en-US",
             testBuyerCountry: "US",
             pageType: "product-details",
-            partnerAttributionId: "Xur_PPCP"
+            partnerAttributionId: "Xur_PPCP",
+            intent: "authorize"
         });
     };
 
@@ -582,30 +640,19 @@ export default function Page() {
     // Check payment method eligibility
     //@ts-expect-error abc
     const getEligiblePaymentMethods = async (sdkInstance) => {
-
-        if (vault) {
             const paymentMethods = await sdkInstance.findEligibleMethods(
                 {
                     paymentFlow: "VAULT_WITHOUT_PAYMENT",
                     currencyCode: "USD"
                 }
-            );
-            return {
-                isPayPalEligible: paymentMethods.isEligible("paypal"),
-                isPayLaterEligible: paymentMethods.isEligble("paylater"),
-                isVenmoEligible: paymentMethods.isEligible("venmo"),
-                payLaterDetails: paymentMethods.getDetails("paylater")
-            };
-        }
-        else {
-            const paymentMethods = await sdkInstance.findEligibleMethods();
+            )
             return {
                 isPayPalEligible: paymentMethods.isEligible("paypal"),
                 isVenmoEligible: paymentMethods.isEligible("venmo"),
                 isPayLaterEligible: paymentMethods.isEligible("paylater"),
-                payLaterDetails: paymentMethods.getDetails("paylater")
+                payLaterDetails: paymentMethods.getDetails("paylater"),
+                isCardFieldsEligible: paymentMethods.isEligible("advanced_cards")
             };
-        }
 
     };
     //@ts-expect-error abc
@@ -731,10 +778,11 @@ export default function Page() {
 
         const onClick = async () => {
             try {
-
+                const currentFlow = paymentFlowRef.current;
+            console.log('Using paymentFlow:', currentFlow);
                 const { redirectURL } = await paymentSession.start(
                     {
-                        presentationMode: "auto",
+                        presentationMode: currentFlow,
                         autoRedirect: {
                             enabled: true,
                         }
@@ -763,7 +811,6 @@ export default function Page() {
             async onApprove(data) {
                 console.log("Payment approved:", data);
                 try {
-                    //@ts-expect-error loaded from sdk
                     const orderData = await captureOrder({
                         orderId: data.orderId,
                     });
@@ -832,6 +879,77 @@ export default function Page() {
         });
     }
 
+    //@ts-expect-error abc
+async function setupCardFields(sdkInstance) {
+  const cardSession = sdkInstance.createCardFieldsOneTimePaymentSession();
+
+  const numberField = cardSession.createCardFieldsComponent({
+    type: "number",
+    placeholder: "Card number",
+  });
+
+  const expiryField = cardSession.createCardFieldsComponent({
+    type: "expiry",
+    placeholder: "MM/YY",
+  });
+  
+  //Card Fields
+  const cvvField = cardSession.createCardFieldsComponent({
+    type: "cvv",
+    placeholder: "CVV",
+  });
+    document.querySelector("#paypal-card-fields-number")?.appendChild(numberField);
+  document.querySelector("#paypal-card-fields-expiry")?.appendChild(expiryField);
+  document.querySelector("#paypal-card-fields-cvv")?.appendChild(cvvField);
+
+  const payButton = document.querySelector("#pay-button");
+  payButton?.addEventListener("click", () => onPayClick(cardSession));
+}
+
+//@ts-expect-error dont know the type of cardsession
+async function onPayClick(cardSession) {
+  try {
+    const orderId = await createOrder(cc_payment); // returns a string id
+    console.log("CC Created order:", orderId?.orderId);
+
+    const { data, state } = await cardSession.submit(orderId?.orderId, {
+      billingAddress: { postalCode: "95131" }, // supply what your business needs
+    });
+
+    switch (state) {
+      case "succeeded": {
+        console.log("This is the comple data: ", data)
+        const { orderId, liabilityShift, enrollmentStatus } = data
+        console.log(`cc_order_id: ${orderId}, liabilityShift: ${liabilityShift}, enrollmentStatus: ${enrollmentStatus}`)
+        // 3DS may or may not have occurred; Use liabilityShift
+        // to determine if the payment should be captured
+        const capture = await captureOrder(orderId);
+        // TODO: show success UI, redirect, etc.
+        console.log(capture)
+        break;
+      }
+      case "canceled": {
+        // Buyer dismissed 3DS modal or canceled the flow
+        // TODO: show non-blocking message & allow retry
+        break;
+      }
+      case "failed": {
+        // Validation or processing failure. data.message may be present
+        console.error("Card submission failed", data);
+        // TODO: surface error to buyer, allow retry
+        break;
+      }
+      default: {
+        // Future-proof for other states (e.g., pending)
+        console.warn("Unhandled submit state", state, data);
+      }
+    }
+  } catch (err) {
+    console.error("Payment flow error", err);
+    // TODO: Show generic error and allow retry
+  }
+}
+
     // Setup ApplePay Button
     //@ts-expect-error abc
     async function setupApplePayButton(sdkInstance) {
@@ -846,6 +964,7 @@ export default function Page() {
 
             async function onClick() {
                 const paymentRequest = {
+                    intent: "CAPTURE",
                     countryCode: "US",
                     currencyCode: "USD",
                     merchantCapabilities,
@@ -865,6 +984,7 @@ export default function Page() {
                 };
 
                 console.log("Creating Apple Pay SDK session...");
+                console.log("IAM NEW")
                 //@ts-expect-error loaded from sdk
                 const appleSdkApplePayPaymentSession = new ApplePaySession(
                     4,
@@ -903,9 +1023,10 @@ export default function Page() {
                 appleSdkApplePayPaymentSession.onpaymentauthorized = async (event) => {
                     try {
                         console.log("Apple Pay authorized... \nCreating PayPal order...");
-                        const createdOrder = await createOrder(request_body);
+                        const createdOrder = await createOrder(applepay_request);
                         console.log(
                             "Confirming PayPal order with applepay payment source...",
+                            createdOrder
                         );
 
                         await paypalSdkApplePayPaymentSession.confirmOrder({
@@ -919,7 +1040,6 @@ export default function Page() {
                         console.log(
                             `Capturing order ${JSON.stringify(createdOrder, null, 2)}...`,
                         );
-                        //@ts-expect-error loaded from sdk
                         const orderData = await captureOrder({
                             //@ts-expect-error loaded from sdk
                             orderId: createdOrder.orderId,
@@ -1027,8 +1147,7 @@ export default function Page() {
                                 <div className="column">
                                     <h1>SDK Token: 
                                         <div className="control">
-                                            <textarea  className='textarea' rows={6} readOnly>
-                                                    {sdkTokens.data}
+                                            <textarea  className='textarea' value={sdkTokens.data} readOnly>
                                             </textarea>
                                         </div>
 
@@ -1057,29 +1176,39 @@ export default function Page() {
                                 </div>
 
                                 <div className="column">
-                                    <label id="apms" className="checkbox">
-                                        <input type="checkbox" checked={apm} onChange={apmHandler} />
-                                        Alternative Payment Methods
-                                    </label>
-                                    <div>
-                                        <label id="Vault without purchase" className="checkbox">
-                                            <input type="checkbox" checked={vault} onChange={vaultHandler} />
-                                            Vault without purchase
-                                        </label>
+                                    <h1>Select Payment Flow</h1>
+                                    <div className='select is-link'>
+                                        <select value={paymentFlow} 
+                                            onChange={(e) => setPaymentFlow(e.target.value)}>
+                                            <option value="">
+                                                Select Payment Flow
+                                            </option>
+                                            <option value="auto">
+                                                Auto
+                                            </option>
+                                            <option value="popup">
+                                                Popup
+                                            </option>
+                                            <option value="modal">
+                                                Modal
+                                            </option>
+                                            <option value="payment-handler">
+                                                Payment Handler
+                                            </option>
+                                            <option value="direct-app-switch">
+                                                Direct App Switch
+                                            </option>
+                                        </select>
+
                                     </div>
-                                    <div>
-                                        <label id="Vault with purchase" className="checkbox">
-                                            <input type="checkbox" checked={vaultPurchase} onChange={vaultPurchaseHandler} />
-                                            Vault with purchase
-                                        </label>
-                                    </div>
+                                
                                 </div>
                             </div>
 
                             <div className="columns">
                                 <div className="column">
                                     {/* @ts-expect-error loaded from script */}
-                                    <paypal-pay-later-button id="paylater-button"></paypal-pay-later-button>
+                                    <paypal-pay-later-button id="paylater-button" disabled={true}></paypal-pay-later-button>
                                 </div>
                             </div>
 
@@ -1106,6 +1235,15 @@ export default function Page() {
                                     <venmo-button id="venmo-button"></venmo-button>
                                 </div>
                             </div>
+
+<div className="card-fields-container">
+    <h1 className='title is-1'>PayPal Card Fields</h1>
+    <h2>5200 0000 0000 1096</h2>
+  <div className="card-field" id="paypal-card-fields-number"></div>
+  <div className="card-field" id="paypal-card-fields-expiry"></div>
+  <div className="card-field" id="paypal-card-fields-cvv"></div>
+</div>
+<button id="pay-button" className="pay-button button">Pay</button>
 
                             <div className='columns'>
                                 <div className="column" id='ideal-mark'>

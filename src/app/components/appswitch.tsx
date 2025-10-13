@@ -3,8 +3,7 @@
 
 import React from "react";
 
-import { usePayPalButtons } from "@paypal/paypal-js-root/packages/react-paypal-js/src/hooks/usePayPalButtons";
-//import { usePayPalButtons } from "@paypal/paypal-js-root";
+import { usePayPalButtons } from "@paypal/react-paypal-js";
 import { v4 as uuidv4 } from 'uuid';
 import { useEffect } from "react";
 import MasterSword from '../../../public/images/CoffeeBeans.png'

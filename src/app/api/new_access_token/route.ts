@@ -27,7 +27,7 @@ export async function POST() {
             body: new URLSearchParams({
                 'grant_type': 'client_credentials',
                 'response_type': 'client_token',
-                'domains[]': 'example.com'
+                'domains[]': 'ql-pp.cc'
             })
         })
         const data = await res.json();

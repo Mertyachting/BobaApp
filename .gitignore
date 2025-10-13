@@ -43,5 +43,6 @@ next-env.d.ts
 
 # components
 /src/app/jssdkv6
+/appswitch-sdk-react
 
 certificates

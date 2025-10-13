@@ -26,7 +26,7 @@ export async function POST() {
             },
             body: new URLSearchParams({
                 'grant_type': 'client_credentials',
-                //'response_type': 'client_token',
+                'response_type': 'token',
                 //'intent': 'sdk_init'
             })
         })
