@@ -264,7 +264,7 @@ export default function Page() {
   "payment_source": {
     "card": {
           "attributes": {
-        "verification": { "method": "SCA_ALWAYS" } // or SCA_WHEN_REQUIRED
+        "verification": { "method": "SCA_ASWAYS" } // or SCA_WHEN_REQUIRED
       },
       "experience_context": {
         "return_url": "https://qlpp.vercel.app/success",
@@ -1217,13 +1217,23 @@ async function onPayClick(cardSession) {
                             </div>
 
 <div className="columns">
-<div className="card-fields-container">
+<div className="card-fields-container is-group">
     <h1 className='title is-1'>PayPal Card Fields</h1>
-    <h2>5200 0000 0000 1096</h2>
+    <ul className='content'> 
+        <li>test cc: 5200 0000 0000 1096</li>
+        <li>expiry: 12/25</li>
+        <li>cvv: 123</li>
+    </ul>
+    <label className="label">cc number</label>
   <div className="card-field input" id="paypal-card-fields-number"></div>
+    <label className="label">cc expiry</label>
   <div className="card-field input" id="paypal-card-fields-expiry"></div>
+  <label className='label'> cvv</label>
   <div className="card-field input" id="paypal-card-fields-cvv"></div>
+  <button id="pay-button" className="pay-button button is-primary">Pay</button>
 </div>
+
+
 </div>
 
 

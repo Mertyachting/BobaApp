@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
     const reqBody = await req.json();
     const base = 'https://api-m.sandbox.paypal.com'
     const url = `${base}/v2/checkout/orders`;
+    const jwt = process.env.JWT || '';
 
     /*
     const { device } = userAgent(reqBody)
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
                     //"PayPal-Mock-Response": '{"mock_application_codes": "PERMISSION_DENIED"}',
                     // "PayPal-Mock-Response": '{"mock_application_codes": "INTERNAL_SERVER_ERROR"}'
                     "PayPal-Partner-Attribution-Id": "Xúr-PPCP",
-                    //"PayPal-Auth-Assertion": jwtToken,
+                    "PayPal-Auth-Assertion": jwt,
                     "PayPal-Request-Id": generateUUID()
                 },
                 method: "POST",
