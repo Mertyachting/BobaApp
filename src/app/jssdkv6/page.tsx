@@ -485,8 +485,7 @@ export default function Page() {
             locale: "en-US",
             testBuyerCountry: "US",
             pageType: "product-details",
-            partnerAttributionId: "Xur_PPCP",
-            intent: "authorize"
+            partnerAttributionId: "Xur_PPCP"
         });
     };
 
@@ -623,7 +622,6 @@ export default function Page() {
     const getEligiblePaymentMethods = async (sdkInstance) => {
             const paymentMethods = await sdkInstance.findEligibleMethods(
                 {
-                    paymentFlow: "VAULT_WITHOUT_PAYMENT",
                     currencyCode: "USD"
                 }
             )
@@ -1144,6 +1142,7 @@ async function onPayClick(cardSession) {
                                
 
                                 <div className="column">
+                                    <h1 className='title is-1'> Branded Buttons</h1>
                                     <div>
                                         {/* @ts-expect-error loaded from script */}
                                         <paypal-button id="branded-buttons" type="buynow"></paypal-button>
@@ -1188,7 +1187,7 @@ async function onPayClick(cardSession) {
                             <div className="columns">
                                 <div className="column">
                                     {/* @ts-expect-error loaded from script */}
-                                    <paypal-pay-later-button id="paylater-button" disabled={true}></paypal-pay-later-button>
+                                    <paypal-pay-later-button id="paylater-button"></paypal-pay-later-button>
                                 </div>
                             </div>
 
@@ -1196,7 +1195,7 @@ async function onPayClick(cardSession) {
                                 <div className="column">
                                     <div>
                                         {/* @ts-expect-error loaded from script */}
-                                        <paypal-button id="vault-button" type="subscribe"></paypal-button>
+                                        <paypal-button id="vault-button" type="subscribe" hidden={true}></paypal-button>
                                     </div>
                                 </div>
                             </div>
@@ -1216,7 +1215,7 @@ async function onPayClick(cardSession) {
                                 </div>
                             </div>
 
-<div className="columns">
+<div className="columns pt-5">
 <div className="card-fields-container is-group">
     <h1 className='title is-1'>PayPal Card Fields</h1>
     <ul className='content'> 
@@ -1230,21 +1229,20 @@ async function onPayClick(cardSession) {
   <div className="card-field input" id="paypal-card-fields-expiry"></div>
   <label className='label'> cvv</label>
   <div className="card-field input" id="paypal-card-fields-cvv"></div>
-  <button id="pay-button" className="pay-button button is-primary">Pay</button>
+  <button id="pay-button" className="pay-button button is-link">Pay</button>
 </div>
 
 
 </div>
 
 
-<div className="columns pdt-5">
-   
+<div className="columns pt-5">
 <div id="fastLane-form">
  <h1 className='title is-1'>FastLane</h1>
                                 <form id="email-form">
                                     <input className="input" type="email" id="email-input" placeholder={email}/>
                                     <div id="watermark-container"></div>
-                                    <button className="button is-primary" id="email-submit-button">Submit</button>
+                                    <button className="button is-link" id="email-submit-button">Submit</button>
                                 </form>
 
 
