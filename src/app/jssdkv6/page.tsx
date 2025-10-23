@@ -754,7 +754,6 @@ export default function Page() {
     //@ts-expect-error abc
     const attachPayPalClickHandler = (paymentSession) => {
 
-
         const brandedButtons = document.querySelector('#branded-buttons');
 
         const onClick = async () => {
@@ -1221,21 +1220,21 @@ async function onPayClick(cardSession) {
 <div className="card-fields-container">
     <h1 className='title is-1'>PayPal Card Fields</h1>
     <h2>5200 0000 0000 1096</h2>
-  <div className="card-field" id="paypal-card-fields-number"></div>
-  <div className="card-field" id="paypal-card-fields-expiry"></div>
-  <div className="card-field" id="paypal-card-fields-cvv"></div>
+  <div className="card-field input" id="paypal-card-fields-number"></div>
+  <div className="card-field input" id="paypal-card-fields-expiry"></div>
+  <div className="card-field input" id="paypal-card-fields-cvv"></div>
 </div>
 </div>
 
 
-<div className="columns">
+<div className="columns pdt-5">
    
 <div id="fastLane-form">
  <h1 className='title is-1'>FastLane</h1>
                                 <form id="email-form">
-                                    <input type="email" id="email-input" />
+                                    <input className="input" type="email" id="email-input" placeholder={email}/>
                                     <div id="watermark-container"></div>
-                                    <button id="email-submit-button">Submit</button>
+                                    <button className="button is-primary" id="email-submit-button">Submit</button>
                                 </form>
 
 
@@ -1261,7 +1260,7 @@ async function onPayClick(cardSession) {
                             
 
 
-                            <div className="columns">
+                            <div className="columns pt-5">
                                 <div className="column has-background-light">
                                     <div id="messaging-configurator"></div>
                                 </div>

@@ -41,24 +41,9 @@ export default function RootLayout({
 
           <div id="navMenu" className="navbar-menu is-active">
             <div className="navbar-start">
-              <Link className="navbar-item" href="./onboarding">
-                Onboarding
-              </Link>
-
-              <Link className="navbar-item" href='/fastlane'>
-                FastLane
-              </Link>
-              <Link className="navbar-item" href='/checkout'>
-                AppSwitch
-              </Link >
-
-              <Link className="navbar-item" href='/braintree'>
-                FastLane with Braintree
-              </Link>
-
-              <Link className="navbar-item" href='/jssdkv6'>
-                new JSSDK v6
-              </Link>
+              <div className="navbar-item">
+                <button className='button'>SDK v6 Core</button>
+              </div>
             </div>
           </div>
 
