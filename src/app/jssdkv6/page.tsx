@@ -3,11 +3,9 @@ import { useQueryClient, useQuery } from '@tanstack/react-query';
 import Script from 'next/script';
 import { Circle } from 'lucide-react';
 import branded from './../payloads/vanilla_branded.json'
-import alipay from './../payloads/alipay.json'
 import setupVaultToken from './../payloads/setup_vault_token.json'
 import { useEffect, useRef, useState } from 'react';
 import { generateUUID } from "@/app/helpers/helpers";
-import { NextResponse } from 'next/server';
 
 
 
@@ -15,9 +13,6 @@ import { NextResponse } from 'next/server';
 
 
 export default function Page() {
-
-
-
     //Create Order
     async function createOrder(payload: object) {
     console.log(typeof (payload))
@@ -58,6 +53,7 @@ export default function Page() {
         })
     }
 
+    /*
     async function GetOrder() {
     const base = 'https://api-m.sandbox.paypal.com';
     const url = `${base}/v2/checkout/orders/3LN68330HC657403H`; // Change endpoint as needed
@@ -77,6 +73,7 @@ export default function Page() {
         return NextResponse.json('error: ' + e);
     }
 }
+    */
 
     useEffect(() => {
         if (window.paypal) {
@@ -93,9 +90,6 @@ export default function Page() {
     const [isLoaded, setIsLoaded] = useState(false);
     const queryClient = useQueryClient()
     const clientToken = queryClient.getQueryData(['sdkToken']);
-    const [apm, setApms] = useState(false)
-    const [vault, setVault] = useState(false)
-    const [vaultPurchase, setVaultPurchase] = useState(false);
     const [layout, setLayout] = useState('');
     const email = 'sb-srp47a45272330@personal.example.com';
     const [paymentFlow, setPaymentFlow] = useState('auto');
@@ -423,19 +417,6 @@ export default function Page() {
 
         }
     }
-
-    const apmHandler = () => {
-        setApms(!apm)
-    }
-
-    const vaultHandler = () => {
-        setVault(!vault)
-    }
-
-    const vaultPurchaseHandler = () => {
-        setVaultPurchase(!vaultPurchase)
-    }
-
     // Main orchestrator function
     const paypal_checkout = async () => {
         console.log(isLoaded)
@@ -1236,6 +1217,7 @@ async function onPayClick(cardSession) {
                                 </div>
                             </div>
 
+<div className="columns">
 <div className="card-fields-container">
     <h1 className='title is-1'>PayPal Card Fields</h1>
     <h2>5200 0000 0000 1096</h2>
@@ -1243,33 +1225,13 @@ async function onPayClick(cardSession) {
   <div className="card-field" id="paypal-card-fields-expiry"></div>
   <div className="card-field" id="paypal-card-fields-cvv"></div>
 </div>
-<button id="pay-button" className="pay-button button">Pay</button>
-
-                            <div className='columns'>
-                                <div className="column" id='ideal-mark'>
-
-                                </div>
-                            </div>
+</div>
 
 
-
-
-
-                            {apm ?
-
-                                <>
-                                    <div className="columns">
-                                        <div className="column">
-                                            <button className="button is-primary" onClick={() => createOrder(alipay)}>AliPay</button>
-                                        </div>
-                                    </div>
-                                </>
-
-                                : <>
-                                </>}
-
-                            <div id="fastLane-form">
-
+<div className="columns">
+   
+<div id="fastLane-form">
+ <h1 className='title is-1'>FastLane</h1>
                                 <form id="email-form">
                                     <input type="email" id="email-input" />
                                     <div id="watermark-container"></div>
@@ -1295,10 +1257,9 @@ async function onPayClick(cardSession) {
                                     </a>
                                 </p>
                             </div>
+</div>
+                            
 
-                            <button className="button"onClick={() => GetOrder()}>
-GET ORDER
-                            </button>
 
                             <div className="columns">
                                 <div className="column has-background-light">
@@ -1308,17 +1269,9 @@ GET ORDER
                         </div >
 
                     </>
-
                 </>
-
                 : <></>
             }
-
-
-
-
         </>
-
-
     )
 }

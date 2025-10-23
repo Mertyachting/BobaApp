@@ -1,28 +1,18 @@
 import { NextResponse } from "next/server";
-
-export const dynamic = 'force-static'
-
-
-
-
-
-function EncodeAuthorization(a: string, b: string) {
-    return btoa(`${a}:${b}`);
-}
+import { encodeAuthorization } from "@/app/helpers/helpers";
 
 export async function POST() {
     const url = 'https://api-m.sandbox.paypal.com/v1/oauth2/token'
-
-    // @ts-expect-error the client id and secret will be pulled from the .env as strings
-    const auth = EncodeAuthorization(process.env.NEXT_PUBLIC_CLIENT_ID, process.env.SECRET_KEY);
+    const auth = encodeAuthorization();
+    console.log(auth)
 
     try {
         const res = await fetch(url, {
             method: "POST",
             headers: {
+                'authorization':`Basic ${auth}`,
                 'Content-Type': 'application/x-www-form-urlencoded',
-                'Authorization': `Basic ${auth}`,
-       
+                'PayPal-Auth-Assertion': `eyJhbGciOiJub25lIn0.eyJpc3MiOiJBU1l6WGpZQi1JMW9iTGNUYjN1QmQtVkpuUDFlQ3JKZ3lrUjMwX1JVcE9Gc1VYUUV3SFlzb29JRVJmdVdDZndEWEw5QmRIOTR1d0dKaTV6USIsInBheWVyX2lkIjoiRFZKQkczRUpWMllNSiJ9.`,
             },
             body: new URLSearchParams({
                 'grant_type': 'client_credentials',
@@ -31,7 +21,7 @@ export async function POST() {
             })
         })
         const data = await res.json();
-
+        console.log(data)
         return NextResponse.json(data);
     }
     catch (e) {

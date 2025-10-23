@@ -1,21 +1,14 @@
 {
     "payment_source": {
         "paypal": {
-            "experience_context": {
-                "shipping_preference": "NO_SHIPPING",
-                "vault_instruction": "ON_CREATE_PAYMENT_TOKENS",
-                "return_url": "https://paymentauth.com/3ds",
-                "cancel_url": "https://paymentauth.com/cancel"
-            },
-            "description": "more stuff",
-            "permit_multiple_payment_tokens": true,
-            "usage_pattern": "IMMEDIATE",
+            "description": "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonum",
+            "permit_multiple_payment_tokens": false,
             "usage_type": "MERCHANT",
-            "customer_type": "CONSUMER"
+            "experience_context": {
+                "shipping_preference": "GET_FROM_FILE",
+                "return_url": "https://go/alice/returnUrl",
+                "cancel_url": "https://go/alice/cancelUrl"
+            }
         }
-    },
-    "customer": {
-        "merchant_customer_id": "FIDCST1-7325_77162Qpy.nXawCG2U4l",
-        "id": "cus55"
     }
 }
