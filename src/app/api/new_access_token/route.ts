@@ -13,6 +13,7 @@ export async function POST() {
                 'authorization':`Basic ${auth}`,
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'PayPal-Auth-Assertion': `eyJhbGciOiJub25lIn0.eyJpc3MiOiJBU1l6WGpZQi1JMW9iTGNUYjN1QmQtVkpuUDFlQ3JKZ3lrUjMwX1JVcE9Gc1VYUUV3SFlzb29JRVJmdVdDZndEWEw5QmRIOTR1d0dKaTV6USIsInBheWVyX2lkIjoiRFZKQkczRUpWMllNSiJ9.`,
+                'partner-attribution-id': 'setup-token-request-001'
             },
             body: new URLSearchParams({
                 'grant_type': 'client_credentials',
@@ -20,8 +21,10 @@ export async function POST() {
                 'domains[]': 'ql-pp.cc'
             })
         })
+        console.log(res)
         const data = await res.json();
         console.log(data)
+        
         return NextResponse.json(data);
     }
     catch (e) {
