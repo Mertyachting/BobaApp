@@ -40,17 +40,20 @@ export default function Page() {
 
     //@ts-expect-error...
     async function captureOrder(data) {
-
-        await fetch(`/api/capture`, {
+        try{
+            await fetch(`/api/capture`, {
             mode: 'same-origin',
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-                orderID: data.orderID
-            })
+            body: JSON.stringify(data)
         })
+        }
+        catch(e){
+            console.log("capture order failed " + e);
+        }
+       
     }
 
     /*
@@ -114,6 +117,8 @@ export default function Page() {
         staleTime: 9000
     })
 
+    //For API APPSWICTH USER AGENT DATA
+    /*
     const user_data = async () => {
         const res = await fetch("api/user_agent",
             { method: 'GET' }
@@ -127,6 +132,7 @@ export default function Page() {
         queryFn: user_data,
         staleTime: 9000
     })
+        */
 
         const applepay_request = {
         intent: "CAPTURE",
@@ -344,8 +350,8 @@ export default function Page() {
             "paypal": {
                 "email_address": "sb-srp47a45272330@personal.example.com",
                 "experience_context": {
-                    "cancel_url": "http://localhost:3000/jssdkv6",
-                    "return_url": "http://localhost:3000/jssdkv6",
+                    "cancel_url": "https://qlpp.vercel.app/succes",
+                    "return_url": "https://qlpp.vercel.app/success",
                     "shipping_preference": "NO_SHIPPING",
                     "user_action": "PAY_NOW",
                     /*
@@ -353,18 +359,52 @@ export default function Page() {
                         "callback_events": ["SHIPPING_ADDRESS"],
                         "callback_url": "https://10.225.155.159:3000/api/shipping-callback"
                     },
-                    */
+                    
                     "app_switch_context": {
                         "mobile_web": {
                             "return_flow": "AUTO",
                             "buyer_user_agent": userData.data?.network?.userAgent
                         }
                     }
+                        */
 
                 }
             }
         }
     }
+
+    const vault_body = {
+    "intent": "CAPTURE",
+    "purchase_units": [
+        {
+            "amount": {
+                "currency_code": "EUR",
+                "value": "200.00"
+            }
+        }
+    ],
+    "payment_source": {
+        "paypal": {
+            "attributes": {
+                "vault": {
+                    "usage_type": "MERCHANT",
+                    "store_in_vault": "ON_SUCCESS",
+                    "description": "test Vault no shipping no address",
+                    "customer_type": "CONSUMER",
+                    "permit_multiple_payment_tokens": false
+                }
+            },
+            "experience_context": {
+                "shipping_preference": "NO_SHIPPING",
+                "return_url": "https://qlpp.vercel.app/success",
+                "cancel_url": "https://qlpp.vercel.app/success",
+                "landing_page": "NO_PREFERENCE",
+                "user_action": "CONTINUE",
+                "payment_method_preference": "UNRESTRICTED"
+            }
+        }
+    }
+}
 
     async function createSetupToken(payload: object) {
         console.log('CLICK setup token')
@@ -433,6 +473,7 @@ export default function Page() {
 
                 if (eligibleMethods.isPayPalEligible) {
                     await setupPayPalButton(sdkInstance);
+                    await setupPayPalVaultButton(sdkInstance);
                 }
 
                 if (eligibleMethods.isVenmoEligible) {
@@ -653,7 +694,8 @@ export default function Page() {
     const createPaymentEventHandlers = () => ({
         //@ts-expect-error abc
         onApprove: (data) => {
-            console.log("Payment approved:", data);
+            console.log(`Payment approved: ${data}` );
+                captureOrder(data);
         },
         /*
         //@ts-expect-error abc
@@ -714,9 +756,85 @@ export default function Page() {
         catch (error) {
             console.error(error);
         }
-
-
     };
+
+        // Handle PayPal button click
+    //@ts-expect-error abc
+    const attachPayPalClickHandler = (paymentSession) => {
+
+        const brandedButtons = document.querySelector('#branded-buttons');
+
+        const onClick = async () => {
+            try {
+                const currentFlow = paymentFlowRef.current;
+            console.log('Using paymentFlow:', currentFlow);
+                await paymentSession.start(
+                    {
+                        presentationMode: currentFlow,
+                        autoRedirect: {
+                            enabled: true,
+                        }
+                    },
+                    createOrder(request_body)
+                );
+           
+
+            } catch (error) {
+                console.error("Error starting checkout flow:", error);
+            }
+        };
+        // Add event listener to the appropriate container
+        brandedButtons?.addEventListener("click", onClick);
+    };
+
+    // Setup Vault button
+        //@ts-expect-error abc
+    const setupPayPalVaultButton = async (sdkInstance) => {
+
+        try {
+            const paymentSession = sdkInstance.createPayPalOneTimePaymentSession(
+                createPaymentEventHandlers()
+            );
+            console.log("One-time payment session created successfully:", paymentSession);
+
+            if (paymentSession.hasReturned()) {
+                await paymentSession.resume();
+            } else {
+                attachPayPalVaultClickHandler(paymentSession);
+            }
+        }
+
+        catch (error) {
+            console.error(error);
+        }
+    };
+
+    // Handle PayPal button click
+    //@ts-expect-error abc
+    const attachPayPalVaultClickHandler = (paymentSession) => {
+
+        const brandedButtons = document.querySelector('#vault-button');
+
+        const onClick = async () => {
+            try {
+                const currentFlow = paymentFlowRef.current;
+            console.log('Using paymentFlow:', currentFlow);
+                await paymentSession.start(
+                    {
+                        presentationMode: currentFlow,
+                    },
+                    createOrder(vault_body)
+                );
+
+
+            } catch (error) {
+                console.error("Error starting checkout flow:", error);
+            }
+        };
+        // Add event listener to the appropriate container
+        brandedButtons?.addEventListener("click", onClick);
+    };
+
     //@ts-expect-error abc
     const setupVaultButton = async (sdkInstance) => {
 
@@ -748,37 +866,7 @@ export default function Page() {
         vaultButton?.addEventListener("click", onClick);
     }
 
-    // Handle PayPal button click
-    //@ts-expect-error abc
-    const attachPayPalClickHandler = (paymentSession) => {
 
-        const brandedButtons = document.querySelector('#branded-buttons');
-
-        const onClick = async () => {
-            try {
-                const currentFlow = paymentFlowRef.current;
-            console.log('Using paymentFlow:', currentFlow);
-                const { redirectURL } = await paymentSession.start(
-                    {
-                        presentationMode: currentFlow,
-                        autoRedirect: {
-                            enabled: true,
-                        }
-                    },
-                    createOrder(request_body)
-                );
-                if (redirectURL) {
-                    console.log(`redirectURL: ${redirectURL}`);
-                    window.location.assign(redirectURL);
-                }
-
-            } catch (error) {
-                console.error("Error starting checkout flow:", error);
-            }
-        };
-        // Add event listener to the appropriate container
-        brandedButtons?.addEventListener("click", onClick);
-    };
 
     // Setup Venmo button
     //@ts-expect-error abc
@@ -1147,11 +1235,19 @@ async function onPayClick(cardSession) {
                                         {/* @ts-expect-error loaded from script */}
                                         <paypal-button id="branded-buttons" type="buynow"></paypal-button>
                                     </div>
+                                    <div className='pt-4 pb-2'>
+                                    {/* @ts-expect-error loaded from script */}
+                                    <paypal-pay-later-button id="paylater-button"></paypal-pay-later-button>
+                                    </div>
                                     <div id="paypal-message">
                                         {/* @ts-expect-error loaded from script */}
                                         <paypal-message></paypal-message>
                                     </div>
-
+                                    <h1 className='title is-1'> Vault with Purchase</h1>
+                                    <div>
+                                        {/* @ts-expect-error loaded from script */}
+                                        <paypal-button id="vault-button" type="subscribe"></paypal-button>
+                                    </div>
                                 </div>
 
                                 <div className="column">
@@ -1184,12 +1280,7 @@ async function onPayClick(cardSession) {
                                 </div>
                             </div>
 
-                            <div className="columns">
-                                <div className="column">
-                                    {/* @ts-expect-error loaded from script */}
-                                    <paypal-pay-later-button id="paylater-button"></paypal-pay-later-button>
-                                </div>
-                            </div>
+                 
 
                             <div className="columns">
                                 <div className="column">

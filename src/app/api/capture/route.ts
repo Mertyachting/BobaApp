@@ -23,9 +23,12 @@ async function getAccessToken() {
 
 export async function POST(request: NextRequest) {
     console.log('CAPTURE STATRED')
-    const { orderID } = await request.json();
+    const {orderId}  = await request.json();
+
+    console.log(`this the request for capture: ${orderId}`)
+    
     try {
-        const data = await fetch(`${url}/v2/checkout/orders/${orderID}/capture`, {
+        const data = await fetch(`${url}/v2/checkout/orders/${orderId}/capture`, {
             headers:
             {
                 "Content-Type": "application/json",
@@ -39,13 +42,14 @@ export async function POST(request: NextRequest) {
                 "PayPal-Auth-Assertion": jwtToken,
             },
             method: 'POST',
-            mode: 'same-origin',
-            body: JSON.stringify({}),
+            mode: 'same-origin'
         })
-        const res = await data;
+        const res = await data.json();
+        //console.log(res)
         return NextResponse.json(res);
 
     } catch (error) {
         console.log(error)
     }
+        
 }
